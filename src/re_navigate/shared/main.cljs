@@ -1,25 +1,21 @@
-(ns re-navigate.ios.core
+(ns re-navigate.shared.main
   (:require [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [re-navigate.events]
+            [re-navigate.shared.screens.edit-incident :refer [edit-incident-form settings]]
             [clojure.data :as d]
+            [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme floating-action-button]]
             [re-navigate.subs]))
 (js* "/* @flow */")
 
 (def ReactNative (js/require "react-native"))
 
-(def app-registry (.-AppRegistry ReactNative))
-(def text (r/adapt-react-class (.-Text ReactNative)))
-(def view (r/adapt-react-class (.-View ReactNative)))
-(def image (r/adapt-react-class (.-Image ReactNative)))
 (def react-navigation (js/require "react-navigation"))
 (def add-navigation-helpers (.-addNavigationHelpers react-navigation))
 (def stack-navigator (.-StackNavigator react-navigation))
 (def tab-navigator (.-TabNavigator react-navigation))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight ReactNative)))
-
 (def logo-img (js/require "./images/cljs.png"))
-
 (defn random-color
   []
   (js* "'#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6)"))
@@ -39,6 +35,7 @@
                  :font-weight "bold"}
    })
 
+; existing
 (defn resd [props]
   (let [number (-> props (get "params") (get "number"))
         route-name "Index"]
@@ -48,7 +45,7 @@
                    :background-color (random-color)}}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
-      [text {:style (style :title)} "Card number " number]]
+      [text {:style (style :title)} "Card numero uno " number]]
      [touchable-highlight
       {:style    (style :button)
        :on-press #(dispatch
@@ -61,14 +58,6 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "RESET"]]]))
-
-(defn settings []
-  [view {:style {:flex 1
-                 :justify-content "center"
-                 :align-items "center"}}
-   [text "SETTINGS"]])
-
-
 
 (defn app-root [{:keys [navigation]}]
   [view {:style {:flex-direction   "column"
@@ -86,7 +75,14 @@
                                                      :routeName :Card
                                                      :params    {:number 1}}
                                         "Index"]])}
-    [text {:style (style :button-text)} "press me"]]])
+    [text {:style (style :button-text)} "press me"]]
+    (let [component (floating-action-button (fn [] (js/console.log "action button!")))]
+     [component
+       [text {:style {:font-size 24
+         :font-weight "400"
+         :color "#FFF"}}
+         "+"]])
+    ])
 
 
 (defn nav-wrapper [component title]
@@ -95,7 +91,6 @@
                  [component (-> navigation .-state js->clj)]))]
     (aset comp "navigationOptions" #js {"title" title})
     comp))
-
 
 (def resd-comp (nav-wrapper resd #(str "Card "
                                        (aget % "state" "params" "number"))))
@@ -118,8 +113,9 @@
                                                             (dispatch [:nav/js [% "Index"]]))
                                               "state"    (clj->js @nav-state)}))}])))
 
-(def tab-router {:Index    {:screen (nav-wrapper card-start "Index")}
-                 :Settings {:screen (nav-wrapper settings "Settings")}})
+(def tab-router {:Index    {:screen (nav-wrapper card-start "Incidents")}
+                 :Settings {:screen (nav-wrapper edit-incident-form "Create")}})
+                ;  :Settings {:screen (nav-wrapper settings "Settings")}})
 
 
 

@@ -1,9 +1,10 @@
 (ns re-navigate.events
   (:require
-    [re-frame.core :refer [reg-event-db after reg-event-fx]]
+    [re-frame.core :refer [reg-event-db after reg-event-fx debug]]
     [clojure.spec :as s]
     [re-navigate.db :as db :refer [app-db]]))
 
+(.log js/console "here2")
 ;; -- Interceptors ------------------------------------------------------------
 ;;
 ;; See https://github.com/Day8/re-frame/blob/master/docs/Interceptors.md
@@ -27,17 +28,70 @@
     (dec arg)
     arg))
 
+(defn log-ex
+  [handler]
+  (fn log-ex-handler
+    [db v]
+    (try
+        (handler db v)        ;; call the handler with a wrapping try
+        (catch :default e     ;; ooops
+          (do
+            (.error js/console e.stack)   ;; print a sane stacktrace
+            (throw e))))))
+
+(def standard-interceptors [validate-spec debug])
+
 ;; -- Handlers --------------------------------------------------------------
 
 (reg-event-db
   :initialize-db
-  validate-spec
+  standard-interceptors
   (fn [_ _]
     app-db))
 
 (reg-event-db
+ :set-greeting
+ standard-interceptors
+ (fn [db [_ value]]
+   (assoc db :greeting value)))
+
+(reg-event-db
+ :set-current-incident
+ standard-interceptors
+ (fn [db [_ value]]
+   (assoc db :current-incident value)))
+
+(reg-event-db
+ :create-incident
+ standard-interceptors
+   (fn [db [_ value]]
+      (js/console.log "creating incident!")
+      ; (rf/dispatch [:nav/push :edit-incident])
+      (assoc db :current-incident value)))
+
+;; -- API handlers ---------------------------------------------------
+
+(reg-event-db
+ :set-students
+ standard-interceptors
+ (fn [db [_ response]]
+   (print response)
+    (assoc db :students response)))
+
+(reg-event-db
+ :process-students-res
+ standard-interceptors
+ (fn [db [_ response]]
+   (print response)
+   (if-not (nil? response)
+    (assoc db :students response)
+    (assoc db :students []))))
+
+;; -- Navigation handlers ---------------------------------------------------
+
+(reg-event-db
   :nav/navigate
-  validate-spec
+  standard-interceptors
   (fn [db [_ [value route-name]]]
     (-> db
         (update-in [:nav/stack-state
@@ -67,7 +121,7 @@
 
 (reg-event-db
   :nav/back
-  validate-spec
+  standard-interceptors
   (fn [db [_ route-name]]
     (let [route-key (keyword "nav.routeName" route-name)]
       (-> db
@@ -76,7 +130,7 @@
 
 (reg-event-db
   :nav/reset
-  validate-spec
+  standard-interceptors
   (fn [db [_ route-name]]
     (let [route-key   (keyword "nav.routeName" route-name)
           first-route (-> db :nav/stack-state route-key :nav.state/routes first)]
@@ -94,27 +148,27 @@
 
 (reg-event-db
   :nav/set-tab
-  validate-spec
+  standard-interceptors
   (fn [db [_ tab]]
     (let [old-idx (get-in db [:nav/tab-state :nav.state/index])
           idx     (position #(do
                                (= tab (name (:nav.route/routeName %))))
                             (get-in db [:nav/tab-state :nav.state/routes]))]
-      (js/console.log (js/Date.) "SETTING TAB " tab idx old-idx)
+      ; (js/console.log (js/Date.) "SETTING TAB " tab idx old-idx)
       (assoc-in db [:nav/tab-state :nav.state/index] idx))))
 
 (reg-event-db
   :nav/set
-  validate-spec
+  standard-interceptors
   (fn [db [_ nav]]
-    (js/console.log "GOT NAV" nav)
+    ; (js/console.log "GOT NAV" nav)
     (assoc-in db [:nav/tab-state :nav.state/index] (.-index nav))))
 
 (reg-event-fx
   :nav/js-tab
-  validate-spec
+  standard-interceptors
   (fn [{:keys [db]} [_ tab-val]]
-    (js/console.log "JS TAB NAV" (js->clj tab-val))
+    ; (js/console.log "JS TAB NAV" (js->clj tab-val))
     {:dispatch (case (.-type tab-val)
                  "Back" [:nav/back]
                  "Navigate" [:nav/set #:nav.state{:index ()} (.-routeName tab-val)])
@@ -123,10 +177,10 @@
 
 (reg-event-fx
   :nav/js
-  validate-spec
+  standard-interceptors
   (fn [{:keys [db]} [_ [nav-val route-name]]]
-    (js/console.log [nav-val route-name])
-    (js/console.log "JS NAV" (js->clj nav-val))
+    ; (js/console.log [nav-val route-name])
+    ; (js/console.log "JS NAV" (js->clj nav-val))
     {:dispatch (case (.-type nav-val)
                  "Back" [:nav/back route-name]
                  "Navigate" [:nav/navigate (nav-val->route nav-val route-name)])

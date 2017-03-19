@@ -1,6 +1,4 @@
  (ns env.android.main
-  (:require [re-navigate.android.core :as core]))
+  (:require [re-navigate.shared.main :as core]))
 
  (core/init)
-
-
