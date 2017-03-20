@@ -46,20 +46,14 @@
             [view {:style card-action-style}
               [text { } @greeting]]]]])))
 
-(defn valid-form? [props] true)
+(defn valid-form? [props]
+  (let [validation-result (.validate (-> props
+                                         (aget "refs")
+                                         (aget "form")))]
+  (empty? (js->clj (aget validation-result "errors")))))
 
-; TODO: Need to get to local/global props to get the 'validation result'
-
-; (defn valid-form? [props]
-;   (js/console.log "valid form?")
-;   (let [validation-result
-;     (.validate (-> props
-;                                          (aget "refs")
-;                                          (aget "form")))]
-;   (empty? (js->clj (aget validation-result "errors")))))
-
-(defn sanitise-form [incident]
-  (if (valid-form? incident)
+(defn on-submit [props incident]
+  (when (valid-form? props)
     (js/console.log (clj->js incident))
     (let [value (keywordize-keys (:value incident))
           start_time (:start_time value)
@@ -70,8 +64,8 @@
             (assoc :start_time (.toISOString (new js/Date start_time)))
             (assoc :end_time (.toISOString (new js/Date end_time))))]
             (js/console.log "converted incident object to: " (clj->js updated))
-          updated))
-          incident)
+      (rf/dispatch [:save-incident updated])
+      (rf/dispatch [:nav/push :incidents]))))
 
 (defn save [incident]
   (let [updated (sanitise-form incident)]
@@ -155,7 +149,6 @@
       (t.struct (clj->js (assoc obj :id t.Number)))
       (t.struct (clj->js obj)))))
 
-; ; TODO: Move state into GLOBAL app state, not confined to component
 ;
 (def style
   {
@@ -172,31 +165,45 @@
                  :font-weight "bold"}
    })
 
+; ; TODO: Move state into GLOBAL app state, not confined to component
 (defn edit-incident-form []
-  (let [current-incident (subscribe [:current-incident])
-        start_time (:start_time @current-incident)
-        end_time   (:end_time @current-incident)
-        students   (:students @current-incident)
-        id         (:id @current-incident)
-        local_id   (:local_id @current-incident)
-    ; Convert string to Date objects, and extract student id's
-    updated (-> @current-incident
-        (assoc :students (into [] (map #(:id %1) students)))
-        (assoc :local_id (if (and (nil? id) (nil? local_id))
-                             (.now js/Date)
-                             (if-not (nil? local_id) local_id id)))
-        (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
-        (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-    (fn []
-      [scroll {:style {:flex 1}}
-        [view {:style { :flex 1 :alignItems "stretch" :backgroundColor "#F5FCFF" :padding 20 :marginTop 0 }}
-          [Form {:ref "form"
-             :type (incident @current-incident)
-             :value @current-incident
-             :options options
-             :on-change #(save %1)
-           }]
-           [touchable-highlight
-             {:style    (style :button)
-             :on-press    #(dispatch [:nav/set-tab "Index"])}
-             [text {:style (style :button-text)} "Save Incident"]]]])))
+ (fn []
+  (r/create-class
+    {:component-will-mount
+     (fn [this]
+       (let [incident (subscribe [:current-incident])
+             start_time (:start_time @incident)
+             end_time   (:end_time @incident)
+             students   (:students @incident)
+             id         (:id @incident)
+             local_id   (:local_id @incident)
+         ; Convert string to Date objects, and extract student id's
+         updated (-> @incident
+             (assoc :students (into [] (map #(:id %1) students)))
+             (assoc :local_id (if (and (nil? id) (nil? local_id))
+                                  (.now js/Date)
+                                  (if-not (nil? local_id) local_id id)))
+             (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
+             (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
+         (r/set-state this {:value updated})))
+
+     :reagent-render
+     (fn [props]
+       (this-as this
+                (let [{:keys [value]} (r/state this)]
+                (js/console.log "Updated model: " (clj->js value))
+                   [view {:style (:form-container styles)}
+                    [scroll
+                     {:style (:scroll-container styles)}
+                     [Form {:ref "form"
+                            :type (incident value)
+                            :value value
+                            :options options
+                            :on-change #(r/set-state this {:value (js->clj %1)})}]
+                      [touchable-highlight
+                        {:style      (style :button)
+                        :disabled?    #(not (valid-form? props))
+                        :on-press    #(js/console.log "touchable-highlight")}
+                        [text {:style (style :button-text)} "Save Incident"]]
+
+                            ]])))})))
