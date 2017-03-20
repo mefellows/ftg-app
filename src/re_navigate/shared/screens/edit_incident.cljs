@@ -9,68 +9,49 @@
             [re-navigate.shared.screens.preferences :refer [filtered-preferences]]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button]]))
 
-; Settings
-(def card-style (.-cardStyle (-> theme .getTheme)))
-(def card-title-style (.-cardTitleStyle (-> theme .getTheme)))
-(def card-content-style (.-cardContentStyle (-> theme .getTheme)))
-(def card-image-style (.-cardImageStyle (-> theme .getTheme)))
-(def card-menu-style (.-cardMenuStyle (-> theme .getTheme)))
-(def card-action-style (.-cardActionStyle (-> theme .getTheme)))
-
-(js/console.log card-style)
-(js/console.log card-title-style)
-(js/console.log card-content-style)
-
-(defn settings []
-  (let [greeting (subscribe [:get-greeting])]
-    (fn []
-      [scroll {:style {:flex 1}}
-        [view {:style { :flex 1 :alignItems "stretch" :backgroundColor "#F5FCFF" :padding 20 :marginTop 0 }}
-          [view {:style card-title-style}
-            [image {:source {:uri "http://www.getmdl.io/assets/demos/welcome_card.jpg"}
-                    :style  card-image-style}]
-            [text {:style card-title-style} "Welcome"]
-            [view {}
-              [text {:style card-content-style} "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sagittis pellentesque lacus eleifend lacinia..."]]
-            [view {:style card-menu-style}
-              [md-icon-toggle {:styles {:margin-top 10}
-                          :on-checked-change #(js/console.log "changed toggle")
-                          :on-press #(js/console.log "pressed toggle")}
-                [text {:style { :fontSize 16 :fontStyle "italic" :fontWeight "bold" :color "#616161" }
-                       :state_checked true} "T"]
-                [text {:style {:color (.-primaryColor (-> theme .getTheme))}} "T"]]
-              [md-switch {:styles {}
-                          :on-checked-change #(js/console.log "changed toggle")
-                          :on-press #(js/console.log "pressed toggle")}]
-              [text { :style {:textAlign "center" :color "#cccccc" :marginTop 0 :marginBottom 0 :fontSize 12 :fontWeight "300"} } "cheese"]]
-            [view {:style card-action-style}
-              [text { } @greeting]]]]])))
-
 (defn valid-form? [props]
   (let [validation-result (.validate (-> props
                                          (aget "refs")
                                          (aget "form")))]
   (empty? (js->clj (aget validation-result "errors")))))
 
-(defn on-submit [props incident]
-  (when (valid-form? props)
-    (js/console.log (clj->js incident))
-    (let [value (keywordize-keys (:value incident))
-          start_time (:start_time value)
-          end_time (:end_time value)
-          students (into [] (map (fn [i] {:id (int i)}) (:students value)))
-          updated (-> value
-            (assoc :students students)
-            (assoc :start_time (.toISOString (new js/Date start_time)))
-            (assoc :end_time (.toISOString (new js/Date end_time))))]
-            (js/console.log "converted incident object to: " (clj->js updated))
-      (rf/dispatch [:save-incident updated])
-      (rf/dispatch [:nav/push :incidents]))))
+; This converts into the appropriate clojure structures for API submission
+; (defn on-submit [props incident]
+;   (when (valid-form? props)
+;     (js/console.log (clj->js incident))
+;     (let [value (keywordize-keys (:value incident))
+;           start_time (:start_time value)
+;           end_time (:end_time value)
+;           students (into [] (map (fn [i] {:id (int i)}) (:students value)))
+;           updated (-> value
+;             (assoc :students students)
+;             (assoc :start_time (.toISOString (new js/Date start_time)))
+;             (assoc :end_time (.toISOString (new js/Date end_time))))]
+;             (js/console.log "converted incident object to: " (clj->js updated))
+;       (dispatch [:save-incident updated])
+;       (dispatch [:nav/push :incidents]))))
 
+; sanitises dates etc.
+(defn sanitise-form [incident]
+  (let [value (keywordize-keys (:value incident))
+        start_time (:start_time value)
+        end_time (:end_time value)
+        updated (-> value
+          (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
+          (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
+          (js/console.log "converted incident object to: " (clj->js updated))
+        updated))
+
+(defn sanitise-and-validate-form [props incident]
+  (if (valid-form? props)
+    (let [updated (sanitise-form incident)]
+    updated)
+    incident))
+
+; save without validating, but cleanses
 (defn save [incident]
-  (let [updated (sanitise-form incident)]
-    (js/console.log "saving!")
-    (dispatch [:set-current-incident updated])))
+  (js/console.log "SAVING!!!")
+    (dispatch [:set-current-incident incident]))
 
 (def t (js/require "tcomb-form-native"))
 (def Form (r/adapt-react-class (.-Form t.form)))
@@ -185,25 +166,23 @@
                                   (if-not (nil? local_id) local_id id)))
              (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
              (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-         (r/set-state this {:value updated})))
+         (save updated)))
 
      :reagent-render
      (fn [props]
        (this-as this
-                (let [{:keys [value]} (r/state this)]
-                (js/console.log "Updated model: " (clj->js value))
-                   [view {:style (:form-container styles)}
-                    [scroll
-                     {:style (:scroll-container styles)}
-                     [Form {:ref "form"
-                            :type (incident value)
-                            :value value
-                            :options options
-                            :on-change #(r/set-state this {:value (js->clj %1)})}]
-                      [touchable-highlight
-                        {:style      (style :button)
-                        :disabled?    #(not (valid-form? props))
-                        :on-press    #(js/console.log "touchable-highlight")}
-                        [text {:style (style :button-text)} "Save Incident"]]
-
-                            ]])))})))
+        (let [current-incident (subscribe [:current-incident])]
+        (js/console.log "Updated model: " (clj->js @current-incident))
+           [view {:style (:form-container styles)}
+            [scroll
+             {:style (:scroll-container styles)}
+             [Form {:ref "form"
+                    :type (incident @current-incident)
+                    :value @current-incident
+                    :options options
+                    :on-change #(save %1)}]
+              [touchable-highlight
+                {:style      (style :button)
+                :disabled?    #(not (valid-form? props))
+                :on-press    #(js/console.log "touchable-highlight")}
+                [text {:style (style :button-text)} "Save Incident"]]]])))})))

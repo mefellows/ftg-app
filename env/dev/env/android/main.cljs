@@ -1,11 +1,11 @@
 (ns ^:figwheel-no-load env.android.main
  (:require [reagent.core :as r]
            [re-navigate.shared.main :as main]
-           [devtools.core :as devtools]
+          ;  [devtools.core :as devtools]
            [figwheel.client :as figwheel :include-macros true]
            ))
 
-(devtools/install!)
+; (devtools/install!)
 (enable-console-print!)
 
 (def cnt (r/atom 0))

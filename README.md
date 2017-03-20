@@ -18,10 +18,10 @@ It is based on the scaffold from [re-natal](https://github.com/drapanjanas/re-na
 
 ## Run
 
-Requirements: 
+Requirements:
 - node & npm/yarn
 - leiningen `brew install leiningen`
-- re-natal & react-native-cli `npm install -g re-natal react-native-cli` 
+- re-natal & react-native-cli `npm install -g re-natal react-native-cli`
 
 `cd` into the directory.
 
@@ -35,11 +35,15 @@ yarn && lein prod-build && react-native run-ios
 - React Native (0.40.0)
 
 
+## Contributing
 
-## Contributors
+Get into current namespace:
 
-Viktor Eriksson ([vikeri](https://github.com/vikeri))
+```
+(in-ns 're-navigate.shared.main)
+```
 
-Anthony Mittaz ([sync](https://github.com/sync))
-
-Sam Liu ([wind13](https://github.com/wind13))
+Set current incident:
+```
+(dispatch [:set-current-incident {:description "test" :students [1] :follow_up true :location "Playground" :summary "Verbal dispute" :action_taken "Resolved through discussion"}])
+```
