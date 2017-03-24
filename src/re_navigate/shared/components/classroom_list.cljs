@@ -1,4 +1,4 @@
-(ns re-navigate.ios.components.classroom-list
+(ns re-navigate.shared.components.classroom-list
   (:require-macros [natal-shell.data-source :as ds])
   (:require [re-navigate.shared.ui :as ui]
             [re-navigate.shared.styles :refer [styles]]

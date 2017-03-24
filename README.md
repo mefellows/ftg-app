@@ -29,6 +29,11 @@ Requirements:
 yarn && lein prod-build && react-native  run-ios --simulator "iPhone 7 Plus"
 ```
 
+
+## Development Notes
+
+* Using `props` and `this`: https://reagent-project.github.io/news/any-arguments.html
+
 ## Notes
 
 - React (15.4.2)

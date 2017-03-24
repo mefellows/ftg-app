@@ -1,4 +1,4 @@
-(ns re-navigate.ios.components.preference-list
+(ns re-navigate.shared.components.preference-list
   (:require-macros [natal-shell.data-source :as ds])
   (:require [re-navigate.shared.ui :as ui]
             [re-navigate.shared.styles :refer [styles]]

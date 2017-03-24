@@ -3,8 +3,8 @@
     [re-frame.core :refer [reg-event-db after reg-event-fx debug dispatch dispatch-sync]]
     [clojure.spec :as s]
     [re-navigate.config :refer [env]]
-    [clojure.string :as str]
     [ajax.core :refer [GET]]
+    [clojure.string :as str]
     [re-navigate.db :as db :refer [app-db]]))
 
 ;; -- Interceptors ------------------------------------------------------------
@@ -48,7 +48,7 @@
 (reg-event-db
   :initialize-db
   standard-interceptors
-  (fn [_ _]
+  (fn [_]
     app-db))
 
 (reg-event-db
@@ -149,14 +149,6 @@
         (if (= (:local_id %1) (:local_id incident)) incident %))))))
 
 (reg-event-db
-  :initialize-db
-  standard-interceptors
-  (fn [_]
-    app-db))
-
-(def standard-middlewares  [standard-interceptors log-ex])
-
-(reg-event-db
  :process-students-res
  standard-interceptors
  (fn
@@ -224,18 +216,6 @@
    (if-not (nil? response)
     (assoc db :teachers response)
     (assoc db :teachers []))))
-
-(reg-event-db
-  :load-teachers
-  standard-interceptors
-  (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/teachers")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-teachers-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
 
 ; Fetch a single incident from the local database (does not make API call)
 (reg-event-db

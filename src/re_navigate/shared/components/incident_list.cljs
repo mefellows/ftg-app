@@ -1,4 +1,4 @@
-(ns re-navigate.ios.components.incident-list
+(ns re-navigate.shared.components.incident-list
   (:require-macros [natal-shell.data-source :as ds])
   (:require [re-navigate.shared.ui :as ui]
             [re-navigate.shared.styles :refer [styles]]
@@ -56,5 +56,12 @@
 
 (defn incident-list-view [incidents loading?]
   (let []
-    [ui/scroll {:style (merge-with (:listview-row styles) (:first-item styles))}
-    [incident-list incidents loading?]]))
+    [ui/view {}
+      [ui/scroll {:style (merge-with (:listview-row styles) (:first-item styles))}
+        [incident-list incidents loading?]]
+        (let [component (ui/floating-action-button (fn [] (js/console.log "action button!")))]
+         [component
+           [ui/text {:style {:font-size 24
+                             :font-weight "400"
+                             :color "#FFF"}}
+                             "+"]])]))

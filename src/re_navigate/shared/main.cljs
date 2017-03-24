@@ -3,6 +3,7 @@
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [re-navigate.events]
             [re-navigate.shared.screens.edit-incident :refer [edit-incident-form]]
+            [re-navigate.shared.screens.incidents :refer [incidents]]
             [clojure.data :as d]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme floating-action-button]]
             [re-navigate.subs]))
@@ -113,7 +114,9 @@
                                                             (dispatch [:nav/js [% "Index"]]))
                                               "state"    (clj->js @nav-state)}))}])))
 
-(def tab-router {:Index    {:screen (nav-wrapper card-start "Incidents")}
+(def tab-router {
+                ;  :Index    {:screen (nav-wrapper card-start "Incidents")}
+                 :Index    {:screen (nav-wrapper incidents "Incidents")}
                  :Settings {:screen (nav-wrapper edit-incident-form "Create")}})
                 ;  :Settings {:screen (nav-wrapper settings "Settings")}})
 
