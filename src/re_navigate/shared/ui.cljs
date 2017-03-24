@@ -29,6 +29,8 @@
 (def scroll (r/adapt-react-class (.-ScrollView react-native)))
 (def Image (.-Image react-native))
 (def image (r/adapt-react-class Image))
+(def ActivityIndicator (.-ActivityIndicator react-native))
+(def activity-indicator (r/adapt-react-class ActivityIndicator))
 (def device-info (js/require "react-native-device-info"))
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight react-native)))
 (def list-view (r/adapt-react-class (.-ListView react-native)))

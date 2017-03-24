@@ -10,26 +10,28 @@
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button]]))
 
 (defn valid-form? [props]
+  (js/console.log "valid form")
+  (js/console.log props)
   (let [validation-result (.validate (-> props
                                          (aget "refs")
                                          (aget "form")))]
   (empty? (js->clj (aget validation-result "errors")))))
 
 ; This converts into the appropriate clojure structures for API submission
-; (defn on-submit [props incident]
-;   (when (valid-form? props)
-;     (js/console.log (clj->js incident))
-;     (let [value (keywordize-keys (:value incident))
-;           start_time (:start_time value)
-;           end_time (:end_time value)
-;           students (into [] (map (fn [i] {:id (int i)}) (:students value)))
-;           updated (-> value
-;             (assoc :students students)
-;             (assoc :start_time (.toISOString (new js/Date start_time)))
-;             (assoc :end_time (.toISOString (new js/Date end_time))))]
-;             (js/console.log "converted incident object to: " (clj->js updated))
-;       (dispatch [:save-incident updated])
-;       (dispatch [:nav/push :incidents]))))
+(defn on-submit [props]
+  (js/console.log "on submit")
+  (js/console.log props)
+  (when (valid-form? props)
+    (let [incident (subscribe [:current-incident])
+          start_time (:start_time @incident)
+          end_time (:end_time @incident)
+          students (into [] (map (fn [i] {:id (int i)}) (:students @incident)))
+          updated (-> @incident
+            (assoc :students students)
+            (assoc :start_time (.toISOString (new js/Date start_time)))
+            (assoc :end_time (.toISOString (new js/Date end_time))))]
+            (js/console.log "converted incident object to: " (clj->js updated))
+      (dispatch [:save-incident updated]))))
 
 ; sanitises dates etc.
 (defn sanitise-form [incident]
@@ -183,6 +185,6 @@
                     :on-change #(save %1)}]
               [touchable-highlight
                 {:style      (style :button)
-                :disabled?    #(not (valid-form? props))
-                :on-press    #(js/console.log "touchable-highlight")}
+                ; :disabled?    #(not (valid-form? props))
+                :on-press    #(on-submit this)}
                 [text {:style (style :button-text)} "Save Incident"]]]])))})))

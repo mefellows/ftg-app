@@ -26,7 +26,7 @@ Requirements:
 `cd` into the directory.
 
 ```
-yarn && lein prod-build && react-native run-ios
+yarn && lein prod-build && react-native  run-ios --simulator "iPhone 7 Plus"
 ```
 
 ## Notes
@@ -45,5 +45,7 @@ Get into current namespace:
 
 Set current incident:
 ```
-(dispatch [:set-current-incident {:description "test" :students [1] :follow_up true :location "Playground" :summary "Verbal dispute" :action_taken "Resolved through discussion"}])
+(dispatch [:set-current-incident {:description "test" :students [1] :follow_up false :location "Senior playground" :summary "Verbal dispute" :action_taken "Resolved through discussion"}])
 ```
+NOTE: Make sure that all of these values exist in the current pickers, otherwise
+you'll get errors like "can't get the value of text..."

@@ -1,8 +1,6 @@
 (ns re-navigate.subs
   (:require [re-frame.core :refer [reg-sub]]))
 
-(.log js/console "here")
-
 (reg-sub
   :nav/tab-state
   (fn [db _]

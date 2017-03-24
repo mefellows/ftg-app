@@ -1,10 +1,11 @@
 (ns re-navigate.events
   (:require
-    [re-frame.core :refer [reg-event-db after reg-event-fx debug]]
+    [re-frame.core :refer [reg-event-db after reg-event-fx debug dispatch dispatch-sync]]
     [clojure.spec :as s]
+    [re-navigate.config :refer [env]]
+    [ajax.core :refer [GET]]
     [re-navigate.db :as db :refer [app-db]]))
 
-(.log js/console "here2")
 ;; -- Interceptors ------------------------------------------------------------
 ;;
 ;; See https://github.com/Day8/re-frame/blob/master/docs/Interceptors.md
@@ -55,37 +56,424 @@
  (fn [db [_ value]]
    (assoc db :greeting value)))
 
+;; -- API handlers ---------------------------------------------------
+
 (reg-event-db
  :set-current-incident
  standard-interceptors
  (fn [db [_ value]]
    (assoc db :current-incident value)))
 
-(reg-event-db
- :create-incident
- standard-interceptors
-   (fn [db [_ value]]
-      (js/console.log "creating incident!")
-      ; (rf/dispatch [:nav/push :edit-incident])
-      (assoc db :current-incident value)))
+(defn find-student-classroom "Finds a classroom in the given db by a students' id" [db id]
+  (let [classrooms (:classrooms db)
+    classroom (first
+               (->> classrooms
+                    (filter
+                      (fn [classroom]
+                        (some #{id} (:students classroom))))))]
+    (if-not (nil? classroom)
+      (let []
+        (assoc db :current-student-classroom classroom))
+      db)))
 
-;; -- API handlers ---------------------------------------------------
+(defn find-classroom "Finds a classroom in the given db by id" [db id]
+  (let [classrooms (:classrooms db)
+    classroom (first
+               (->> classrooms
+                    (filter
+                      (fn [classroom]
+                        (= (:id classroom) id)))))]
+    (if-not (nil? classroom)
+      (let []
+        (dispatch [:nav/push :edit-classroom])
+        (assoc db :current-student-classroom classroom))
+      nil)))
+
+(defn find-student "Finds a student in the given db by id" [db id]
+  (let [students (:students db)
+        incidents (:incidents db)
+        student-incidents (->> incidents
+                               (filter
+                                 (fn [incident]
+                                   ; return true where student in (:students incident)
+                                   (not (empty? (->> (:students incident)
+                                                    (filter
+                                                      (fn [student]
+                                                        (= (:id student) id)))))))))
+
+        student (first
+                   (->> students
+                        (filter
+                          (fn [student]
+                            (= (:id student) id)))))]
+        (if-not (nil? student)
+          (let []
+            (dispatch [:nav/push :edit-student])
+            (-> db
+              (assoc :current-student-incidents student-incidents)
+              (assoc :current-student student)))
+          nil)))
+
+(defn find-incident "Finds an incident in the given db by id" [db id]
+  (let [incidents (:incidents db)
+    incident (first
+               (->> incidents
+                    (filter
+                      (fn [incident]
+                        (= (:id incident) id)))))]
+    (if-not (nil? incident)
+      (let []
+        (dispatch [:nav/push :edit-incident])
+        (assoc db :current-incident incident))
+      nil)))
+
+(defn find-preference "Finds an preference in the given db by id" [db id]
+  (let [preferences (:preferences db)
+    preference (first
+               (->> preferences
+                    (filter
+                      (fn [preference]
+                        (= (:id preference) id)))))]
+    (if-not (nil? preference)
+      (let []
+        (dispatch [:nav/push :edit-preference])
+        (assoc db :current-preference preference))
+      nil)))
+
+(defn update-incident "Finds and updates an incident in the db (uses local-id)" [db incident]
+  (let [incidents (:incidents db)]
+    (->>
+      incidents
+      (mapv #(let []
+        (if (= (:local_id %1) (:local_id incident)) incident %))))))
 
 (reg-event-db
- :set-students
- standard-interceptors
- (fn [db [_ response]]
-   (print response)
-    (assoc db :students response)))
+  :initialize-db
+  standard-interceptors
+  (fn [_]
+    app-db))
+
+(reg-event-db
+  :nav/push
+  standard-interceptors
+  (fn [db [screen-name config]]
+    (nav/push-screen! screen-name config)
+    db))
+
+(reg-event-db
+  :nav/pop
+  standard-interceptors
+  (fn [db]
+    (nav/pop-screen!)
+    db))
+
+(reg-event-db
+  :nav/toggle-drawer
+  standard-interceptors
+  (fn [db [config]]
+    (nav/toggle-drawer! config)
+    db))
+
+(reg-event-db
+  :menu-select
+  standard-interceptors
+  (fn [db [option]]
+    (nav/set-title! (str/capitalize (:name option)))
+    (assoc db :menu-selected (if (:id option) option nil))))
+
+(def standard-middlewares  [standard-interceptors log-ex])
 
 (reg-event-db
  :process-students-res
  standard-interceptors
- (fn [db [_ response]]
+ (fn
+   ;; store the response of fetching the phones list in the phones attribute of the db
+   [db [_ response]]
    (print response)
    (if-not (nil? response)
     (assoc db :students response)
     (assoc db :students []))))
+
+(reg-event-db
+ :process-classrooms-res
+ standard-interceptors
+ (fn
+   ;; store the response of fetching the phones list in the phones attribute of the db
+   [db [_ response]]
+   (print response)
+   (if-not (nil? response)
+    (assoc db :classrooms response)
+    (assoc db :classrooms []))))
+
+(reg-event-db
+  :load-students
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/students")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-students-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+(reg-event-db
+  :load-teachers
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/teachers")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-teachers-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+(reg-event-db
+  :load-classrooms
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/classes")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-classrooms-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+(reg-event-db
+ :process-teachers-res
+ standard-interceptors
+ (fn
+   ;; store the response of fetching the phones list in the phones attribute of the db
+   [db [_ response]]
+   (print response)
+   (if-not (nil? response)
+    (assoc db :teachers response)
+    (assoc db :teachers []))))
+
+(reg-event-db
+  :load-teachers
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/teachers")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-teachers-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+; Fetch a single incident from the local database (does not make API call)
+(reg-event-db
+  :incident-load
+  standard-interceptors
+  (fn [db [id]]
+    (find-incident db id)))
+
+; Fetch a single preference from the local database (does not make API call)
+(reg-event-db
+  :preference-load
+  standard-interceptors
+  (fn [db [id]]
+    (find-preference db id)))
+
+; Fetch a single student from the local database (does not make API call)
+(reg-event-db
+  :student-load
+  standard-interceptors
+  (fn [db [id]]
+    (-> db
+      (find-student id)
+      (find-student-classroom id))))
+
+(reg-event-db
+  :incident-res
+  standard-interceptors
+  (fn [db [incident]]
+    (let [incident (if (map? incident) [(:image incident)] incident)]
+      (-> db
+          (assoc-in [:incident-query :incident] incident)
+          (assoc-in [:incident-query :loading?] false)))))
+
+(reg-event-db
+  :login
+  standard-interceptors
+  (fn [db [user]]
+    (let [password (:password user)]
+      (if (= password "gullynorth")
+        (let []
+          (dispatch [:nav/push :incidents])
+          (assoc db :user user))
+        (let []
+          (js/alert "Invalid password :(")
+          db)
+          ))))
+
+; Sync all lookup lists. These are not managed as carefully as incidents
+; so all they do is replace what is currently in storage.
+(defn sync-config []
+  (dispatch [:load-students])
+  (dispatch [:load-incidents])
+  (dispatch [:load-classrooms])
+  (dispatch [:load-teachers])
+  (dispatch [:load-preferences]))
+
+(reg-event-db
+  :sync-complete
+  standard-interceptors
+  (fn [db [res records]]
+    (print res)
+    (sync-config)
+    (when-not (nil? res)
+      ; update all incidents -> no longer dirty!
+      (merge (:incidents db) (->> records
+        (map (fn [i]
+          (assoc i :synchronised true))))))
+    (assoc db :sync false)))
+
+(reg-event-db
+  :sync-fail
+  standard-interceptors
+  (fn [db [res]]
+    (print res)
+    ; (ui/alert (str "Synchronise failed: " res))
+    (assoc db :sync false)))
+
+(defn sync-records [records]
+  (js/console.log "sync records: " (clj->js records))
+  (ajax.core/POST (str (:hostname env) "/sync")
+   {
+    :format (ajax.core/json-request-format)
+    :response-format (ajax.core/json-response-format {:keywords? true})
+    :params (clj->js records)
+    :handler #(dispatch [:sync-complete %1 records])
+    :error-handler #(dispatch-sync [:sync-fail %1])}))
+
+(defn save-preference [preference]
+  (js/console.log "saving preference: " (clj->js preference))
+  (let [method (if (nil? (:id preference))
+                          ajax.core/POST
+                          ajax.core/PUT)]
+                          (method (str (:hostname env) "/preferences")
+                          {
+                            :format (ajax.core/json-request-format)
+                            :response-format (ajax.core/json-response-format {:keywords? true})
+                            :params (clj->js (assoc preference :school_id (:school-id env)))
+                            :handler #(js/alert "Saved!")
+                            :error-handler #(js/alert "Error saving!")})))
+
+; New Handlers
+(reg-event-db
+  :save-preference
+  standard-interceptors
+  (fn [db [preference]]
+    (save-preference preference)
+    (assoc db :current-preference preference)))
+
+; New Handlers
+(reg-event-db
+  :synchronise
+  standard-interceptors
+  (fn [db [_]]
+    ; (ui/alert "Synchronising...")
+    (sync-records (let [incidents (:incidents db)]
+      (->> incidents
+        (filterv #(let []
+            (= (:synchronised %1) false))))))
+    (assoc db :sync true)))
+
+(reg-event-db
+  :bad-response
+  standard-interceptors
+  (fn [db [_ body]]
+    (print "error: " body)
+    db))
+
+(reg-event-db
+ :process-incidents-res
+ standard-interceptors
+ (fn
+   [db [_ response]]
+   (print response)
+   (assoc db :incidents response)))
+
+(reg-event-db
+ :process-preferences-res
+ standard-interceptors
+ (fn
+   [db [_ response]]
+   (print response)
+   (assoc db :preferences response)))
+
+(reg-event-db
+  :load-incidents
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/incidents")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-incidents-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+(reg-event-db
+  :load-preferences
+  standard-interceptors
+  (fn [db _]
+    (ajax.core/GET (str (:hostname env) "/school/" (:school-id env) "/preferences")
+     {
+      :response-format :json
+      :keywords? true
+      :handler #(dispatch [:process-preferences-res %1])
+      :error-handler #(dispatch-sync [:bad-response %1])})
+   db)) ; <- DAH! Must return the state!!
+
+ (reg-event-db
+   :create-incident
+   standard-interceptors
+   (fn [db [_]]
+      (dispatch [:nav/push :edit-incident])
+      (assoc db :current-incident {})))
+
+ (reg-event-db
+   :create-preference
+   standard-interceptors
+   (fn [db [_]]
+      (dispatch [:nav/push :edit-preference])
+      (assoc db :current-preference {})))
+
+(defn get-incident-by-local-id "Finds an incident in the db by its local-id" [db local-id]
+  (let [incidents (:incidents db)]
+    (first (->>
+      incidents
+      (filter #(let []
+        (= (:local_id %1) local-id)))))))
+
+ ; NOTE: handle updates to unsynced records -> currently only adds new.
+ (reg-event-db
+   :save-incident
+   standard-interceptors
+   (fn [db [incident]]
+     (print "Saving local incident: " incident)
+     (let [incidents (:incidents db)
+           id (:id incident)
+           local-id (:local_id incident)
+           updated-incident (assoc incident :synchronised false)]
+       (if (nil? (get-incident-by-local-id db local-id))
+         (let []
+           ; Add a new incident locally.
+           (print "INSERTING a new incident")
+           (->> updated-incident
+             (conj incidents)
+             (assoc db :incidents)))
+           (let []
+             ; find and update an existing incident
+             (print "UPDATING an existing incident")
+              (->> updated-incident
+                   (update-incident db)
+                   (assoc db :incidents)))))))
 
 ;; -- Navigation handlers ---------------------------------------------------
 

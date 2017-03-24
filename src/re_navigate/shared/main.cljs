@@ -146,4 +146,9 @@
 
 (defn init []
   (dispatch-sync [:initialize-db])
-  (.registerComponent app-registry "ReNavigate" #(r/reactify-component start)))
+  (dispatch-sync [:load-teachers])
+  (.registerComponent app-registry "ReNavigate" #(r/reactify-component start))
+  (dispatch [:load-students])
+  (dispatch [:load-classrooms])
+  (dispatch [:load-preferences])
+  (dispatch [:load-incidents]))
