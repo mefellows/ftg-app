@@ -5,6 +5,7 @@
     [re-navigate.config :refer [env]]
     [clojure.string :as str]
     [ajax.core :refer [GET]]
+    [re-navigate.shared.ui :as ui]
     [re-navigate.db :as db :refer [app-db]]))
 
 ;; -- Interceptors ------------------------------------------------------------
@@ -241,21 +242,21 @@
 (reg-event-db
   :incident-load
   standard-interceptors
-  (fn [db [id]]
+  (fn [db [_ id]]
     (find-incident db id)))
 
 ; Fetch a single preference from the local database (does not make API call)
 (reg-event-db
   :preference-load
   standard-interceptors
-  (fn [db [id]]
+  (fn [db [_ id]]
     (find-preference db id)))
 
 ; Fetch a single student from the local database (does not make API call)
 (reg-event-db
   :student-load
   standard-interceptors
-  (fn [db [id]]
+  (fn [db [_ id]]
     (-> db
       (find-student id)
       (find-student-classroom id))))
@@ -263,7 +264,7 @@
 (reg-event-db
   :incident-res
   standard-interceptors
-  (fn [db [incident]]
+  (fn [db [_ incident]]
     (let [incident (if (map? incident) [(:image incident)] incident)]
       (-> db
           (assoc-in [:incident-query :incident] incident)
@@ -272,7 +273,7 @@
 (reg-event-db
   :login
   standard-interceptors
-  (fn [db [user]]
+  (fn [db [_ user]]
     (let [password (:password user)]
       (if (= password "gullynorth")
         (let []
@@ -295,7 +296,7 @@
 (reg-event-db
   :sync-complete
   standard-interceptors
-  (fn [db [res records]]
+  (fn [db [_ res records]]
     (print res)
     (sync-config)
     (when-not (nil? res)
@@ -308,9 +309,9 @@
 (reg-event-db
   :sync-fail
   standard-interceptors
-  (fn [db [res]]
+  (fn [db [_ res]]
     (print res)
-    ; (ui/alert (str "Synchronise failed: " res))
+    (ui/alert (str "Synchronise failed: " res))
     (assoc db :sync false)))
 
 (defn sync-records [records]
@@ -333,14 +334,14 @@
                             :format (ajax.core/json-request-format)
                             :response-format (ajax.core/json-response-format {:keywords? true})
                             :params (clj->js (assoc preference :school_id (:school-id env)))
-                            :handler #(js/alert "Saved!")
-                            :error-handler #(js/alert "Error saving!")})))
+                            :handler #(ui/alert "Saved!")
+                            :error-handler #(ui/alert "Error saving!")})))
 
 ; New Handlers
 (reg-event-db
   :save-preference
   standard-interceptors
-  (fn [db [preference]]
+  (fn [db [_ preference]]
     (save-preference preference)
     (assoc db :current-preference preference)))
 
@@ -349,7 +350,7 @@
   :synchronise
   standard-interceptors
   (fn [db [_]]
-    ; (ui/alert "Synchronising...")
+    (ui/alert "Synchronising...")
     (sync-records (let [incidents (:incidents db)]
       (->> incidents
         (filterv #(let []
@@ -428,12 +429,13 @@
  (reg-event-db
    :save-incident
    standard-interceptors
-   (fn [db [incident]]
+   (fn [db [_ incident]]
      (print "Saving local incident: " incident)
      (let [incidents (:incidents db)
            id (:id incident)
            local-id (:local_id incident)
            updated-incident (assoc incident :synchronised false)]
+           (print "updated-incident" updated-incident)
        (if (nil? (get-incident-by-local-id db local-id))
          (let []
            ; Add a new incident locally.
@@ -449,6 +451,8 @@
                    (assoc db :incidents)))))))
 
 ;; -- Navigation handlers ---------------------------------------------------
+
+;; TODO: Review which events are used!!
 
 (reg-event-db
   :nav/navigate
@@ -522,7 +526,7 @@
   :nav/set
   standard-interceptors
   (fn [db [_ nav]]
-    ; (js/console.log "GOT NAV" nav)
+    (js/console.log "GOT NAV" nav)
     (assoc-in db [:nav/tab-state :nav.state/index] (.-index nav))))
 
 (reg-event-fx
@@ -546,3 +550,11 @@
                  "Back" [:nav/back route-name]
                  "Navigate" [:nav/navigate (nav-val->route nav-val route-name)])
      :db       db}))
+
+; EXPERIMENTAL NAVIGATION
+(reg-event-db
+ :navigate-to
+ standard-interceptors
+ (fn [db [_ value]]
+   (js/console.log "navigating somewhere:" value)
+   (assoc db :nav-screen value)))

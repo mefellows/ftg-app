@@ -38,6 +38,7 @@
           :current-classroom            s/Any
           :authenticated                s/Bool
           :sync                         s/Bool
+          :nav-screen                   s/Str
           :current-page                 s/Keyword))
 
 ;; initial state of app-db

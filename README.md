@@ -49,8 +49,13 @@ Get into current namespace:
 ```
 
 Set current incident:
-```
+```clj
 (dispatch [:set-current-incident {:description "test" :students [1] :follow_up false :location "Senior playground" :summary "Verbal dispute" :action_taken "Resolved through discussion"}])
 ```
+
+```clj
+(dispatch [:set-current-incident (clj->js {:description "betty" :students [1] :follow_up false :location "Senior playground" :summary "Verbal dispute" :action_taken "Resolved through discussion"})])
+```
+
 NOTE: Make sure that all of these values exist in the current pickers, otherwise
 you'll get errors like "can't get the value of text..."

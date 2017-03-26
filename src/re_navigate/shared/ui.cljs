@@ -35,7 +35,7 @@
 (def touchable-highlight (r/adapt-react-class (.-TouchableHighlight react-native)))
 (def list-view (r/adapt-react-class (.-ListView react-native)))
 (def app-registry (.-AppRegistry react-native))
-
+(defn alert [title] (.alert (.-Alert react-native) title))
 
 ; stylesheet
 
@@ -59,9 +59,9 @@
 (def icon (r/adapt-react-class font-awesome))
 (def icon-button (r/adapt-react-class (.-Button font-awesome)))
 
-; (def material-icons (js/require "react-native-vector-icons/MaterialIcons"))
-; (def material-icon (r/adapt-react-class material-icons))
-; (def material-icon-button (r/adapt-react-class (.-Button material-icons)))
+(def material-icons (js/require "react-native-vector-icons/MaterialIcons"))
+(def material-icon (r/adapt-react-class material-icons))
+(def material-icon-button (r/adapt-react-class (.-Button material-icons)))
 
 ;; app intro
 (def app-intro (r/adapt-react-class (.-default (js/require "react-native-app-intro"))))

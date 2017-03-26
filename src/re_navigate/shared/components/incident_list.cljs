@@ -24,7 +24,7 @@
       [ui/view {:style       (:listview-row styles)}
         [ui/view {:style (:listview-rowcontent styles)}
             [ui/text {:style (:listview-rowcontent-attribute styles)}
-                (str (.getUTCDate date) "/" (.getUTCMonth date) " " (.getUTCFullYear date))]
+                (str (.getUTCDate date) "/" (+ 1(.getUTCMonth date)) " " (.getUTCFullYear date))]
             [ui/text {:style (:listview-rowcontent-inner styles)}
               summary]]
         [ui/view {:style (:listview-rowaction styles)}

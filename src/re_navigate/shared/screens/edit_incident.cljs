@@ -4,45 +4,44 @@
             [clojure.walk :refer [keywordize-keys]]
             [re-navigate.shared.styles :refer [styles]]
             [clojure.string :as str]
-            [re-navigate.subs]
-            [re-navigate.events]
+            ; [re-navigate.subs]
+            ; [re-navigate.events]
             [re-navigate.shared.screens.preferences :refer [filtered-preferences]]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button]]))
 
 (defn valid-form? [props]
-  (js/console.log "valid form")
-  (js/console.log props)
+  (js/console.log "validating form")
   (let [validation-result (.validate (-> props
                                          (aget "refs")
                                          (aget "form")))]
   (empty? (js->clj (aget validation-result "errors")))))
 
-; This converts into the appropriate clojure structures for API submission
-(defn on-submit [props]
-  (js/console.log "on submit")
-  (js/console.log props)
-  (when (valid-form? props)
-    (let [incident (subscribe [:current-incident])
-          start_time (:start_time @incident)
-          end_time (:end_time @incident)
-          students (into [] (map (fn [i] {:id (int i)}) (:students @incident)))
-          updated (-> @incident
-            (assoc :students students)
-            (assoc :start_time (.toISOString (new js/Date start_time)))
-            (assoc :end_time (.toISOString (new js/Date end_time))))]
-            (js/console.log "converted incident object to: " (clj->js updated))
-      (dispatch [:save-incident updated]))))
+
 
 ; sanitises dates etc.
 (defn sanitise-form [incident]
-  (let [value (keywordize-keys (:value incident))
-        start_time (:start_time value)
-        end_time (:end_time value)
-        updated (-> value
+  (let [start_time (:start_time incident)
+        end_time (:end_time incident)
+        updated (-> incident
           (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
           (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-          (js/console.log "converted incident object to: " (clj->js updated))
-        updated))
+          (js/console.log "sanitised incident object to: " (clj->js updated))
+        (keywordize-keys updated)))
+
+; This converts into the appropriate clojure structures for API submission
+(defn on-submit [props]
+  (js/console.log "on submit")
+  (when (valid-form? props)
+    (let [i (subscribe [:current-incident])
+          incident (sanitise-form @i)
+          students (into [] (map (fn [i] {:id (int i)}) (:students incident)))
+          updated (-> incident
+            (assoc :students students)
+            (assoc :start_time (.toISOString (new js/Date (:start_time incident))))
+            (assoc :end_time (.toISOString (new js/Date (:end_time incident)))))]
+            (js/console.log "original incident object: " (clj->js incident))
+            (js/console.log "converted incident object to: " (clj->js updated))
+      (dispatch [:save-incident (js->clj updated)]))))
 
 (defn sanitise-and-validate-form [props incident]
   (if (valid-form? props)
@@ -52,8 +51,8 @@
 
 ; save without validating, but cleanses
 (defn save [incident]
-  (js/console.log "SAVING!!!")
-    (dispatch [:set-current-incident incident]))
+  (js/console.log "Saving incident:" incident)
+    (dispatch [:set-current-incident (js->clj incident)]))
 
 (def t (js/require "tcomb-form-native"))
 (def Form (r/adapt-react-class (.-Form t.form)))
@@ -174,7 +173,7 @@
      (fn [props]
        (this-as this
         (let [current-incident (subscribe [:current-incident])]
-        (js/console.log "Updated model: " (clj->js @current-incident))
+        (js/console.log "render incident form with incident: " @current-incident)
            [view {:style (:form-container styles)}
             [scroll
              {:style (:scroll-container styles)}
