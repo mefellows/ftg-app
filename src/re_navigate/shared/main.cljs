@@ -7,17 +7,14 @@
             [re-navigate.shared.components.navigation :refer [tab-navigator]]
             [clojure.data :as d]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme floating-action-button]]
-            [re-navigate.subs]
-            ))
+            [re-navigate.subs]))
+
 (js* "/* @flow */")
 
-; I get it, this subscription results in a re-render, which results in the navigation
 (defn start []
   (let [nav-state (subscribe [:nav/tab-state])]
     (fn []
-      [tab-navigator])
-    )
-  )
+      [tab-navigator])))
 
 (defn init []
   (dispatch-sync [:initialize-db])

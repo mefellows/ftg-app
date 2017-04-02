@@ -113,22 +113,7 @@
   (fn [db _]
       (:sync db)))
 
-;; EXPERIMENTAL NAVIGATION
-; See line 40 for an example of what seems 'right'
-; https://github.com/react-community/react-navigation/blob/master/docs/guides/Navigation-Actions.md#navigate
-; But, doesn't seem...any simpler/better than (-> navigation (.navigate "DrawerOpen"))
-; -> I still need to provide a reference to the 'navigation' object anyway.
-;
-(def react-navigation (js/require "react-navigation"))
-(def navigation-actions (.-NavigationActions react-navigation))
-(defn navigate-action [route-name]
-  (-> navigation-actions (.navigate (clj->js {:routeName route-name}))))
-
-; <- can't do this - it's not 'immutable'. It has side-effects, so you can't do it.
-; instead, subscribe to this elsewhere and do what must be done...
-(reg-sub
-  :nav-screen
-  (fn [db _]
-    (js/console.log "TAB NAVIGATING MOTHER FUCKER!")
-    (-> navigation/tab-navigator (.dispatch (navigate-action (:nav-screen db))))))
-    ; (-> navigation/tn (.dispatch (navigate-action "Settings")))))
+  (reg-sub
+    :nav-screen
+    (fn [db _]
+      (:nav-screen db)))
