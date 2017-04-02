@@ -91,7 +91,7 @@
      ; Other
      :container     {:flex             1
                      :background-color :transparent
-                     :flex-direction   :row
+                     :flex-direction   :column
                      :height 600}
      :scroll-container {:flex 8
                         :padding 20}

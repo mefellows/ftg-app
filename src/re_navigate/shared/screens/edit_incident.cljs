@@ -7,7 +7,7 @@
             ; [re-navigate.subs]
             ; [re-navigate.events]
             [re-navigate.shared.screens.preferences :refer [filtered-preferences]]
-            [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button]]))
+            [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button header]]))
 
 (defn valid-form? [props]
   (js/console.log "validating form")
@@ -149,7 +149,7 @@
 
 ; ; TODO: Move state into GLOBAL app state, not confined to component
 (defn edit-incident-form []
- (fn []
+ (fn [nav]
   (r/create-class
     {:component-will-mount
      (fn [this]
@@ -174,16 +174,17 @@
        (this-as this
         (let [current-incident (subscribe [:current-incident])]
         (js/console.log "render incident form with incident: " @current-incident)
-           [view {:style (:form-container styles)}
-            [scroll
-             {:style (:scroll-container styles)}
-             [Form {:ref "form"
-                    :type (incident @current-incident)
-                    :value @current-incident
-                    :options options
-                    :on-change #(save %1)}]
-              [touchable-highlight
-                {:style      (style :button)
-                ; :disabled?    #(not (valid-form? props))
-                :on-press    #(on-submit this)}
-                [text {:style (style :button-text)} "Save Incident"]]]])))})))
+          [view {:flex 1 :flex-direction "column"}
+            [header nav "Edit Incident"]
+            [view {:flex 9}
+              [scroll {:style (:scroll-container styles)}
+               [Form {:ref "form"
+                      :type (incident @current-incident)
+                      :value @current-incident
+                      :options options
+                      :on-change #(save %1)}]
+                [touchable-highlight
+                  {:style      (style :button)
+                  ; :disabled?    #(not (valid-form? props))
+                  :on-press    #(on-submit this)}
+                  [text {:style (style :button-text)} "Save Incident"]]]]])))})))

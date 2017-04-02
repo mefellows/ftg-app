@@ -12,8 +12,9 @@
 (js* "/* @flow */")
 
 (defn start []
-  (let [nav-state (subscribe [:nav/tab-state])]
+  (let [nav-state (subscribe [:nav-screen])]
     (fn []
+      (js/console.log "re-rendering main:" @nav-state)
       [tab-navigator])))
 
 (defn init []

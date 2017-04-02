@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [re-navigate.utils :as u]
             [medley.core :as m]
+            [re-frame.core :as rf]
             [camel-snake-kebab.core :as cs :include-macros true]))
 
 (enable-console-print!)
@@ -93,3 +94,37 @@
       (.withOnPress handler)
       (.build)
       (r/adapt-react-class)))
+
+; Header: button + title
+(defn header [navigation title]
+ [view {:border-bottom-width 0
+           :border-bottom-color "#aaaaaa"
+           :flex .4
+           :flex-direction "row"
+           :background-color "#eeeeee"
+           :margin-top 40
+           :padding-top 10
+           :margin-bottom 40}
+     [view {:flex 1
+               :text-align-vertical "center"
+               :height 18}
+       [material-icon-button {:name "menu"
+                                 :background-color "#eee"
+                                 :color "#aaaaaa"
+                                 :border-radius 0
+                                 :on-press (fn []
+                                   (js/console.log "drawer press?" navigation)
+                                   (-> navigation (.navigate "DrawerOpen")))}]]
+     [view {:flex 7 :align-items "center" :height 18}
+       [text {:text-align "center"}
+         title]]
+    [view {:flex 1
+              :text-align-vertical "center"
+              :height 18}
+      [material-icon-button {:name "refresh"
+                                :background-color "#eee"
+                                :color "#aaaaaa"
+                                :border-radius 0
+                                :on-press (fn []
+                                  (js/console.log "synchronise")
+                                  (rf/dispatch [:synchronise]))}]]])

@@ -553,8 +553,8 @@
 
 ; EXPERIMENTAL NAVIGATION
 (reg-event-db
- :navigate-to
+ :set-nav
  standard-interceptors
  (fn [db [_ value]]
-   (js/console.log "navigating somewhere:" value)
+   (js/console.log "navigating somewhere:" (clj->js value))
    (assoc db :nav-screen value)))

@@ -1,7 +1,5 @@
 (ns re-navigate.subs
-  (:require [re-frame.core :refer [reg-sub]]
-            [re-navigate.shared.components.navigation :as navigation]))
-
+  (:require [re-frame.core :refer [reg-sub]]))
 
 (reg-sub
   :nav/tab-state
@@ -113,7 +111,7 @@
   (fn [db _]
       (:sync db)))
 
-  (reg-sub
-    :nav-screen
-    (fn [db _]
-      (:nav-screen db)))
+(reg-sub
+  :nav-screen
+  (fn [db _]
+    (:nav-screen db)))
