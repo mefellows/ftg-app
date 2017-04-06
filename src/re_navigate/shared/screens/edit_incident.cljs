@@ -29,11 +29,13 @@
         (keywordize-keys updated)))
 
 ; This converts into the appropriate clojure structures for API submission
-(defn on-submit [props]
+(defn on-submit [props nav]
   (js/console.log "on submit")
   (when (valid-form? props)
     (let [i (subscribe [:current-incident])
           incident (sanitise-form @i)
+          ; turns it BACK into a clj object.
+          ; TODO: move this out of thsi class??
           students (into [] (map (fn [i] {:id (int i)}) (:students incident)))
           updated (-> incident
             (assoc :students students)
@@ -41,7 +43,8 @@
             (assoc :end_time (.toISOString (new js/Date (:end_time incident)))))]
             (js/console.log "original incident object: " (clj->js incident))
             (js/console.log "converted incident object to: " (clj->js updated))
-      (dispatch [:save-incident (js->clj updated)]))))
+      (dispatch [:save-incident (js->clj updated)])
+      (-> nav (.navigate "Index")))))
 
 (defn sanitise-and-validate-form [props incident]
   (if (valid-form? props)
@@ -51,8 +54,8 @@
 
 ; save without validating, but cleanses
 (defn save [incident]
-  (js/console.log "Saving incident:" incident)
-    (dispatch [:set-current-incident (js->clj incident)]))
+  (js/console.log "Saving incident:" (clj->js incident))
+  (dispatch [:set-current-incident (js->clj incident)]))
 
 (def t (js/require "tcomb-form-native"))
 (def Form (r/adapt-react-class (.-Form t.form)))
@@ -151,40 +154,60 @@
 (defn edit-incident-form []
  (fn [nav]
   (r/create-class
-    {:component-will-mount
-     (fn [this]
-       (let [incident (subscribe [:current-incident])
-             start_time (:start_time @incident)
-             end_time   (:end_time @incident)
-             students   (:students @incident)
-             id         (:id @incident)
-             local_id   (:local_id @incident)
-         ; Convert string to Date objects, and extract student id's
-         updated (-> @incident
-             (assoc :students (into [] (map #(:id %1) students)))
-             (assoc :local_id (if (and (nil? id) (nil? local_id))
-                                  (.now js/Date)
-                                  (if-not (nil? local_id) local_id id)))
-             (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
-             (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-         (save updated)))
+    {
+    ;   :component-will-mount
+    ;  (fn [this]
+    ;    (let [incident (subscribe [:current-incident])
+    ;          start_time (:start_time @incident)
+    ;          end_time   (:end_time @incident)
+    ;          students   (:students @incident)
+    ;          id         (:id @incident)
+    ;          local_id   (:local_id @incident)
+     ;
+    ;          ; Convert string to Date objects, and extract student id's
+    ;          updated (-> @incident
+    ;              (assoc :students (into [] (map #(:id %1) students)))
+    ;              (assoc :local_id (if (and (nil? id) (nil? local_id))
+    ;                                   (.now js/Date)
+    ;                                   (if-not (nil? local_id) local_id id)))
+    ;              (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
+    ;              (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
+    ;              (js/console.log "updated incident" (clj->js updated))
+    ;          (save updated)))
 
      :reagent-render
      (fn [props]
        (this-as this
-        (let [current-incident (subscribe [:current-incident])]
-        (js/console.log "render incident form with incident: " @current-incident)
+        (let [current-incident (subscribe [:current-incident])
+              start_time (:start_time @current-incident)
+              end_time   (:end_time @current-incident)
+              students   (:students @current-incident)
+              id         (:id @current-incident)
+              local_id   (:local_id @current-incident)
+
+              ; Convert string to Date objects, and extract student id's
+              updated (-> @current-incident
+                  ; (assoc :students (into [] (map #(:id %1) students)))
+                  ; (assoc :local_id (if (and (nil? id) (nil? local_id))
+                  ;                      (.now js/Date)
+                  ;                      (if-not (nil? local_id) local_id id)))
+                  (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
+                  (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
+                  (js/console.log "students BEFORE" (clj->js students))
+                  (js/console.log "students AFTER" (clj->js (:students updated)))
+                  ; (save updated)
+        (js/console.log "render incident form with incident: " (clj->js updated))
           [view {:flex 1 :flex-direction "column"}
             [header nav "Edit Incident"]
             [view {:flex 9}
               [scroll {:style (:scroll-container styles)}
                [Form {:ref "form"
-                      :type (incident @current-incident)
-                      :value @current-incident
+                      :type (incident updated)
+                      :value (clj->js updated)
                       :options options
                       :on-change #(save %1)}]
                 [touchable-highlight
                   {:style      (style :button)
                   ; :disabled?    #(not (valid-form? props))
-                  :on-press    #(on-submit this)}
+                  :on-press    #(on-submit this nav)}
                   [text {:style (style :button-text)} "Save Incident"]]]]])))})))

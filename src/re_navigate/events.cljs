@@ -5,6 +5,7 @@
     [re-navigate.config :refer [env]]
     [clojure.string :as str]
     [ajax.core :refer [GET]]
+    [clojure.walk :refer [keywordize-keys stringify-keys]]
     [re-navigate.shared.ui :as ui]
     [re-navigate.db :as db :refer [app-db]]))
 
@@ -52,19 +53,23 @@
   (fn [_ _]
     app-db))
 
-(reg-event-db
- :set-greeting
- standard-interceptors
- (fn [db [_ value]]
-   (assoc db :greeting value)))
-
 ;; -- API handlers ---------------------------------------------------
 
+; Send a clojure incident please, with
 (reg-event-db
  :set-current-incident
  standard-interceptors
  (fn [db [_ value]]
+   (js/console.log "SET2 current incident" (clj->js value))
    (assoc db :current-incident value)))
+
+; reset
+(reg-event-db
+ :clear-current-incident
+ standard-interceptors
+ (fn [db [_ value]]
+   (js/console.log "reset current incident")
+   (assoc db :current-incident nil)))
 
 (defn find-student-classroom "Finds a classroom in the given db by a students' id" [db id]
   (let [classrooms (:classrooms db)
@@ -117,16 +122,22 @@
           nil)))
 
 (defn find-incident "Finds an incident in the given db by id" [db id]
+  (js/console.log "finds incident by id " id)
   (let [incidents (:incidents db)
     incident (first
                (->> incidents
                     (filter
                       (fn [incident]
                         (= (:id incident) id)))))]
+                        (js/console.log "find incident: BEFORE student transform" (clj->js (:students incident)))
     (if-not (nil? incident)
-      (let []
-        (dispatch [:nav/push :edit-incident])
-        (assoc db :current-incident incident))
+      (let [students (:students incident)
+              ; check if students are formatted as [1 2 3] or [obj obj obj]
+              updated-incident (if (and (not (empty? students)) (map? (students 0)))
+                                (assoc incident :students (into [] (map #(:id %1) students)))
+                                 incident)]
+        (js/console.log "current incident" (clj->js (map? (students 0))))
+        (assoc db :current-incident updated-incident))
       nil)))
 
 (defn find-preference "Finds an preference in the given db by id" [db id]
@@ -144,10 +155,12 @@
 
 (defn update-incident "Finds and updates an incident in the db (uses local-id)" [db incident]
   (let [incidents (:incidents db)]
+  (js/console.log "overidding? here are our inncidents: " incidents)
     (->>
       incidents
       (mapv #(let []
-        (if (= (:local_id %1) (:local_id incident)) incident %))))))
+        (js/console.log "incident id, local_id vs saved incident id, local id: " (:id %1) (:local_id %1), (:id incident) (:local_id incident))
+        (if (or (= (:id %1) (:id incident)) (and (= (:local_id %1) (:local_id incident)) (not= (:local_id %1 nil)))) incident %))))))
 
 (reg-event-db
   :initialize-db
@@ -183,37 +196,37 @@
   :load-students
   standard-interceptors
   (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/students")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-students-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
+    (-> (js/fetch (str (:hostname env) "/students") (clj->js {:method "GET"}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:process-students-res %1]))
+        (.catch #(dispatch-sync [:bad-response %1])))
+        db))
 
 (reg-event-db
   :load-teachers
   standard-interceptors
   (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/teachers")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-teachers-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
+    (-> (js/fetch (str (:hostname env) "/teachers") (clj->js {:method "GET"}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:process-teachers-res %1]))
+        (.catch #(dispatch-sync [:bad-response %1])))
+        db))
 
 (reg-event-db
   :load-classrooms
   standard-interceptors
   (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/classes")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-classrooms-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
+    (-> (js/fetch (str (:hostname env) "/classes") (clj->js {:method "GET"}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:process-classrooms-res %1]))
+        (.catch #(dispatch-sync [:bad-response %1])))
+        db))
 
 (reg-event-db
  :process-teachers-res
@@ -225,18 +238,6 @@
    (if-not (nil? response)
     (assoc db :teachers response)
     (assoc db :teachers []))))
-
-(reg-event-db
-  :load-teachers
-  standard-interceptors
-  (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/teachers")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-teachers-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
 
 ; Fetch a single incident from the local database (does not make API call)
 (reg-event-db
@@ -314,28 +315,30 @@
     (ui/alert (str "Synchronise failed: " res))
     (assoc db :sync false)))
 
+(defn clj->json
+  [ds]
+  (.stringify js/JSON (clj->js ds)))
+
 (defn sync-records [records]
   (js/console.log "sync records: " (clj->js records))
-  (ajax.core/POST (str (:hostname env) "/sync")
-   {
-    :format (ajax.core/json-request-format)
-    :response-format (ajax.core/json-response-format {:keywords? true})
-    :params (clj->js records)
-    :handler #(dispatch [:sync-complete %1 records])
-    :error-handler #(dispatch-sync [:sync-fail %1])}))
+    (-> (js/fetch (str (:hostname env) "/sync") (clj->js {:method "POST" :body (clj->json records) :headers (stringify-keys { :accept "application/json" :content-type "application/json"})}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:sync-complete %1]))
+        (.catch #(dispatch-sync [:sync-fail %1]))))
 
 (defn save-preference [preference]
   (js/console.log "saving preference: " (clj->js preference))
   (let [method (if (nil? (:id preference))
-                          ajax.core/POST
-                          ajax.core/PUT)]
-                          (method (str (:hostname env) "/preferences")
-                          {
-                            :format (ajax.core/json-request-format)
-                            :response-format (ajax.core/json-response-format {:keywords? true})
-                            :params (clj->js (assoc preference :school_id (:school-id env)))
-                            :handler #(ui/alert "Saved!")
-                            :error-handler #(ui/alert "Error saving!")})))
+                          "POST"
+                          "PUT")]
+                          (-> (js/fetch (str (:hostname env) "/preferences") (clj->js {:method method :body (clj->json (assoc preference :school_id (:school-id env))) :headers (stringify-keys { :accept "application/json" :content-type "application/json"})}))
+                              (.then #(.json %))
+                              (.then js->clj)
+                              (.then keywordize-keys)
+                              (.then #(ui/alert "Saved!"))
+                              (.catch #(ui/alert "Error saving!")))))
 
 ; New Handlers
 (reg-event-db
@@ -384,25 +387,25 @@
   :load-incidents
   standard-interceptors
   (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/incidents")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-incidents-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
+    (-> (js/fetch (str (:hostname env) "/incidents") (clj->js {:method "GET"}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:process-incidents-res %1]))
+        (.catch #(dispatch-sync [:bad-response %1])))
+        db))
 
 (reg-event-db
   :load-preferences
   standard-interceptors
   (fn [db _]
-    (ajax.core/GET (str (:hostname env) "/school/" (:school-id env) "/preferences")
-     {
-      :response-format :json
-      :keywords? true
-      :handler #(dispatch [:process-preferences-res %1])
-      :error-handler #(dispatch-sync [:bad-response %1])})
-   db)) ; <- DAH! Must return the state!!
+    (-> (js/fetch (str (:hostname env) "/school/" (:school-id env) "/preferences") (clj->js {:method "GET"}))
+        (.then #(.json %))
+        (.then js->clj)
+        (.then keywordize-keys)
+        (.then #(dispatch [:process-preferences-res %1]))
+        (.catch #(dispatch-sync [:bad-response %1])))
+        db))
 
  (reg-event-db
    :create-incident
@@ -425,6 +428,13 @@
       (filter #(let []
         (= (:local_id %1) local-id)))))))
 
+; (defn get-incident-by-id "Finds an incident in the db by its id" [db id]
+;   (let [incidents (:incidents db)]
+;     (first (->>
+;       incidents
+;       (filter #(let []
+;         (= (:id %1) id)))))))
+
  ; NOTE: handle updates to unsynced records -> currently only adds new.
  (reg-event-db
    :save-incident
@@ -436,7 +446,7 @@
            local-id (:local_id incident)
            updated-incident (assoc incident :synchronised false)]
            (print "updated-incident" updated-incident)
-       (if (nil? (get-incident-by-local-id db local-id))
+        (if (and (nil? (get-incident-by-local-id db local-id)) (nil? id))
          (let []
            ; Add a new incident locally.
            (print "INSERTING a new incident")

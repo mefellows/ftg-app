@@ -59,3 +59,11 @@ Set current incident:
 
 NOTE: Make sure that all of these values exist in the current pickers, otherwise
 you'll get errors like "can't get the value of text..."
+
+
+## Android
+
+```
+adb reverse tcp:8081 tcp:8081 # React Dev Server
+adb reverse tcp:3000 tcp:3000 # Local API
+```

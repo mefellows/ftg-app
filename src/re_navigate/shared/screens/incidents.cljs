@@ -15,4 +15,4 @@
                       :flex-direction "column"}
               [ui/header nav "Incidents"]
               [ui/view {:flex 9}
-                [incident-list-view @incidents @loading]]])))
+                [incident-list-view nav @incidents @loading]]])))

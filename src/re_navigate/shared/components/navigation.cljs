@@ -4,6 +4,8 @@
             [clojure.data :as d]
             [re-navigate.shared.screens.edit-incident :refer [edit-incident-form]]
             [re-navigate.shared.screens.incidents :refer [incidents]]
+            [re-navigate.shared.screens.students :refer [students]]
+            [re-navigate.shared.screens.classrooms :refer [classrooms]]
             [re-navigate.shared.screens.preferences :refer [preferences]]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme]]))
 
@@ -26,11 +28,13 @@
 (def tab-router {
                  :Index          {:screen (nav-wrapper incidents "Incidents")}
                  :Preferences    {:screen (nav-wrapper preferences "Preferences")}
-                 :Edit       {:screen (nav-wrapper edit-incident-form "Create")}})
+                 :Students       {:screen (nav-wrapper students "Students")}
+                 :Classrooms     {:screen (nav-wrapper classrooms "Classrooms")}
+                 :Edit           {:screen (nav-wrapper edit-incident-form "Create/Edit Incident")}})
 
 ; TODO: take events / functions to dynamically add screens (e.g. during startup)
 (defn drawer-navigator-inst []
-  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Edit"]
+  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Students" "Classrooms" "Edit"]
                                                    :initialRouteName "Index"})))
 
 ; is this basically a redux-like reducer?

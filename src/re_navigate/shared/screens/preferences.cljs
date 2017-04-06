@@ -18,6 +18,35 @@
             loading (rf/subscribe [:sync])]
             [ui/view {:flex 1
                       :flex-direction "column"}
-              [ui/header nav "Incidents"]
+              [ui/header nav "Preferences"]
               [ui/view {:flex 9}
-                [preference-list @preferences @loading]]])))
+                 [ui/scroll {:style (:first-item styles)}
+                   [ui/view {:style (:readonly-form styles)}
+                    [ui/text {:style (:readonly-section-title styles)}
+                       "Contacts"]]
+                       [ui/view {:style (:readonly-container styles)}
+                    [ui/text {:style (:readonly-value styles)}
+                       "The following people will be notified daily at 5pm of all yard incidents"]]
+                    [preference-list (filtered-preferences @preferences "contact") @loading]
+                   [ui/view {:style (:readonly-form styles)}
+                    [ui/text {:style (:readonly-section-title styles)}
+                       "Summaries"]]
+                       [ui/view {:style (:readonly-container styles)}
+                    [ui/text {:style (:readonly-value styles)}
+                       "Incident summaries for pre-population in yard incidents"]]
+                    [preference-list (filtered-preferences @preferences "summary") @loading]
+                   [ui/view {:style (:readonly-form styles)}
+                    [ui/text {:style (:readonly-section-title styles)}
+                       "Locations"]]
+                       [ui/view {:style (:readonly-container styles)}
+                    [ui/text {:style (:readonly-value styles)}
+                       "Locations for pre-population in yard incidents"]]
+                    [preference-list (filtered-preferences @preferences "location") @loading]
+                    [ui/view {:style (:readonly-form styles)}
+                     [ui/text {:style (:readonly-section-title styles)}
+                        "Actions"]]
+                        [ui/view {:style (:readonly-container styles)}
+                     [ui/text {:style (:readonly-value styles)}
+                        "Action taken for pre-population in yard incidents"]]
+                        [preference-list (filtered-preferences @preferences "action") @loading]
+                    ]]])))

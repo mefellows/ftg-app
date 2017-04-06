@@ -97,34 +97,38 @@
 
 ; Header: button + title
 (defn header [navigation title]
- [view {:border-bottom-width 0
-           :border-bottom-color "#aaaaaa"
-           :flex .4
-           :flex-direction "row"
-           :background-color "#eeeeee"
-           :margin-top 40
-           :padding-top 10
-           :margin-bottom 40}
-     [view {:flex 1
-               :text-align-vertical "center"
-               :height 18}
-       [material-icon-button {:name "menu"
-                                 :background-color "#eee"
-                                 :color "#aaaaaa"
-                                 :border-radius 0
-                                 :on-press (fn []
-                                   (js/console.log "drawer press?" navigation)
-                                   (-> navigation (.navigate "DrawerOpen")))}]]
-     [view {:flex 7 :align-items "center" :height 18}
-       [text {:text-align "center"}
-         title]]
-    [view {:flex 1
-              :text-align-vertical "center"
-              :height 18}
-      [material-icon-button {:name "refresh"
-                                :background-color "#eee"
-                                :color "#aaaaaa"
+  (let [nav-screen (rf/subscribe [:nav-screen])]
+    (js/console.log "RENDER HEADER AGAIN: " @nav-screen)
+
+
+
+    [view {:border-bottom-width 0
+          :border-bottom-color "#aaaaaa"
+          :color "#fff"
+          :flex .4
+          :flex-direction "row"
+          :background-color (colour :orange800)
+          :margin-top 40
+          :padding-top 10
+          :margin-bottom 40}
+       [view {:flex 1 :text-align-vertical "center" :height 18}
+         [material-icon-button {:name "menu"
+                                :background-color (colour :orange800)
+                                :color "#fff"
                                 :border-radius 0
                                 :on-press (fn []
-                                  (js/console.log "synchronise")
-                                  (rf/dispatch [:synchronise]))}]]])
+                                            (js/console.log "drawer press?" navigation)
+                                            (-> navigation (.navigate "DrawerOpen")))}]]
+       [view {:flex 7 :align-items "center" :height 18}
+         [text {:style {:text-align "center" :color "#fff"}}
+           title]]
+      [view {:flex 1
+                :text-align-vertical "center"
+                :height 18}
+        [material-icon-button {:name "refresh"
+                                  :background-color (colour :orange800)
+                                  :color "#fff"
+                                  :border-radius 0
+                                  :on-press (fn []
+                                    (js/console.log "synchronise")
+                                    (rf/dispatch [:synchronise]))}]]]))
