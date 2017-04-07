@@ -10,7 +10,6 @@
   "modules": [
     "react-navigation",
     "react-native-material-kit",
-    "react-native-device-info",
     "react-native-vector-icons/FontAwesome",
     "react-native-vector-icons/MaterialIcons",
     "react-native-app-intro",

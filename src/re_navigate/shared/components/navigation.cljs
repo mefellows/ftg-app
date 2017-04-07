@@ -25,8 +25,7 @@
           (aset "navigationOptions" "drawer" #js {"label" title})
           comp))
 
-(def tab-router {
-                 :Index          {:screen (nav-wrapper incidents "Incidents")}
+(def tab-router {:Index          {:screen (nav-wrapper incidents "Incidents")}
                  :Preferences    {:screen (nav-wrapper preferences "Preferences")}
                  :Students       {:screen (nav-wrapper students "Students")}
                  :Classrooms     {:screen (nav-wrapper classrooms "Classrooms")}

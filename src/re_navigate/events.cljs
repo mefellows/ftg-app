@@ -162,12 +162,6 @@
         (js/console.log "incident id, local_id vs saved incident id, local id: " (:id %1) (:local_id %1), (:id incident) (:local_id incident))
         (if (or (= (:id %1) (:id incident)) (and (= (:local_id %1) (:local_id incident)) (not= (:local_id %1 nil)))) incident %))))))
 
-(reg-event-db
-  :initialize-db
-  standard-interceptors
-  (fn [_]
-    app-db))
-
 (def standard-middlewares  [standard-interceptors log-ex])
 
 (reg-event-db
@@ -278,12 +272,15 @@
     (let [password (:password user)]
       (if (= password "gullynorth")
         (let []
-          (dispatch [:nav/push :incidents])
           (assoc db :user user))
         (let []
-          (js/alert "Invalid password :(")
-          db)
-          ))))
+          (js/alert "Invalid password :(") db)))))
+
+(reg-event-db
+  :set-user
+  standard-interceptors
+  (fn [db [_ user]]
+    (assoc db :user user)))
 
 ; Sync all lookup lists. These are not managed as carefully as incidents
 ; so all they do is replace what is currently in storage.
@@ -426,7 +423,7 @@
     (first (->>
       incidents
       (filter #(let []
-        (= (:local_id %1) local-id)))))))
+        (and (= (:local_id %1) local-id) (not (nil? local-id)))))))))
 
 ; (defn get-incident-by-id "Finds an incident in the db by its id" [db id]
 ;   (let [incidents (:incidents db)]
@@ -460,6 +457,12 @@
                    (update-incident db)
                    (assoc db :incidents)))))))
 
+; EXPERIMENTAL NAVIGATION
+(reg-event-db
+  :set-login-form
+  standard-interceptors
+  (fn [db [_ value]]
+    (assoc db :login-form value)))
 ;; -- Navigation handlers ---------------------------------------------------
 
 ;; TODO: Review which events are used!!

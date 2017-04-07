@@ -7,7 +7,7 @@
             ; [re-navigate.subs]
             ; [re-navigate.events]
             [re-navigate.shared.screens.preferences :refer [filtered-preferences]]
-            [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button header]]))
+            [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button header colour]]))
 
 (defn valid-form? [props]
   (js/console.log "validating form")
@@ -141,7 +141,7 @@
                  :font-weight "100"
                  :margin      20
                  :text-align  "center"}
-   :button      {:background-color "#999"
+   :button      {:background-color (colour :orange800)
                  :padding          10
                  :margin-bottom    20
                  :border-radius    5}
@@ -154,28 +154,7 @@
 (defn edit-incident-form []
  (fn [nav]
   (r/create-class
-    {
-    ;   :component-will-mount
-    ;  (fn [this]
-    ;    (let [incident (subscribe [:current-incident])
-    ;          start_time (:start_time @incident)
-    ;          end_time   (:end_time @incident)
-    ;          students   (:students @incident)
-    ;          id         (:id @incident)
-    ;          local_id   (:local_id @incident)
-     ;
-    ;          ; Convert string to Date objects, and extract student id's
-    ;          updated (-> @incident
-    ;              (assoc :students (into [] (map #(:id %1) students)))
-    ;              (assoc :local_id (if (and (nil? id) (nil? local_id))
-    ;                                   (.now js/Date)
-    ;                                   (if-not (nil? local_id) local_id id)))
-    ;              (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
-    ;              (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-    ;              (js/console.log "updated incident" (clj->js updated))
-    ;          (save updated)))
-
-     :reagent-render
+    {:reagent-render
      (fn [props]
        (this-as this
         (let [current-incident (subscribe [:current-incident])
@@ -187,16 +166,8 @@
 
               ; Convert string to Date objects, and extract student id's
               updated (-> @current-incident
-                  ; (assoc :students (into [] (map #(:id %1) students)))
-                  ; (assoc :local_id (if (and (nil? id) (nil? local_id))
-                  ;                      (.now js/Date)
-                  ;                      (if-not (nil? local_id) local_id id)))
                   (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
                   (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-                  (js/console.log "students BEFORE" (clj->js students))
-                  (js/console.log "students AFTER" (clj->js (:students updated)))
-                  ; (save updated)
-        (js/console.log "render incident form with incident: " (clj->js updated))
           [view {:flex 1 :flex-direction "column"}
             [header nav "Edit Incident"]
             [view {:flex 9}
@@ -208,6 +179,6 @@
                       :on-change #(save %1)}]
                 [touchable-highlight
                   {:style      (style :button)
-                  ; :disabled?    #(not (valid-form? props))
+                  :disabled?   #(not (valid-form? this))
                   :on-press    #(on-submit this nav)}
                   [text {:style (style :button-text)} "Save Incident"]]]]])))})))

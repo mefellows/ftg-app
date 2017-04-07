@@ -39,6 +39,7 @@
           :authenticated                s/Bool
           :sync                         s/Bool
           :nav-screen                   s/Any
+          :login-form                   s/Any
           :current-page                 s/Keyword))
 
 ;; initial state of app-db
@@ -47,8 +48,9 @@
                                                    #:nav.route{:key :SettingsKey :routeName :Settings}]}
              :nav/stack-state #:nav.routeName {:Index #:nav.state {:index  0
                                                                    :routes [#:nav.route {:key :Home :routeName :Home}]}}
-            ;  :students [{:id 1 :first_name "billy" :last_name "silly"} {:id 2 :first_name "jane" :last_name "austin"}]
-            ;  :preferences [ { :id 1 :type "contact" :school_id 0 :value "m@onegeek.com.au" }, { :id 15 :type "location" :school_id 0 :value "Green turf" }, { :id 16 :type "location" :school_id 0 :value "Four square courts" }, { :id 18 :type "location" :school_id 0 :value "Adventure playground" }, { :id 19 :type "location" :school_id 0 :value "Senior playground" }, { :id 20 :type "location" :school_id 0 :value "Junior playground" }, { :id 21 :type "location" :school_id 0 :value "BBQ area - playground" }, { :id 22 :type "location" :school_id 0 :value "Basketball court" }, { :id 23 :type "location" :school_id 0 :value "Footy oval" }, { :id 24 :type "location" :school_id 0 :value "BBQ area" }, { :id 25 :type "location" :school_id 0 :value "3/4 decking" }, { :id 26 :type "location" :school_id 0 :value "Other" }, { :id 27 :type "action" :school_id 0 :value "Resolved through discussion" }, { :id 28 :type "action" :school_id 0 :value "Refer to BEs" }, { :id 29 :type "action" :school_id 0 :value "Walk with teacher" }, { :id 30 :type "action" :school_id 0 :value "Sent to office" }, { :id 31 :type "action" :school_id 0 :value "Other" }, { :id 32 :type "summary" :school_id 0 :value "Verbal dispute" }, { :id 33 :type "summary" :school_id 0 :value "Physical dispute" }, { :id 34 :type "summary" :school_id 0 :value "Unsafe / rough play" }, { :id 35 :type "summary" :school_id 0 :value "No hat" }, { :id 36 :type "summary" :school_id 0 :value "Other" }, { :id 17 :type "location" :school_id 0 :value "Gully" } ]
-            ;  :current-incident {:description "test" :students [1] :follow_up true}
-            :nav-screen {:type "Navigation/INIT"}
-             })
+             :nav-screen {:type "Navigation/INIT"}
+             :user (if goog.DEBUG
+                    {:id 0
+                     :username "Stephanie Massarotti"
+                     :password "gullynorth"}
+                    nil)})

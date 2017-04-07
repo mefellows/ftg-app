@@ -115,3 +115,8 @@
   :nav-screen
   (fn [db _]
     (:nav-screen db)))
+
+(reg-sub
+  :login-form
+  (fn [db _]
+    (:login-form db)))
