@@ -15,4 +15,4 @@
                       :flex-direction "column"}
               [ui/header nav "Students"]
               [ui/view {:flex 9}
-                [student-list (sort-by :first_name @students) @loading]]])))
+                [student-list nav (sort-by :first_name @students) @loading]]])))

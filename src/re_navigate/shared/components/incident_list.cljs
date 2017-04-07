@@ -11,10 +11,6 @@
 
 (def list-view-ds (ds/data-source {:rowHasChanged #(not= %1 %2)}))
 
-(defn submit [id]
-  (print "selected: " id )
-  (rf/dispatch [:incident-load id] ))
-
 (defn render-incident-row [nav]
   (fn [{:keys [summary id] :as incident}]
     (js/console.log "render-incident-row" nav incident)
@@ -63,11 +59,11 @@
     [ui/view {}
       [ui/scroll {:style (merge-with (:listview-row styles) (:first-item styles))}
         [incident-list nav incidents loading?]]
-        (let [component (ui/floating-action-button (fn []
-                          (rf/dispatch-sync [:clear-current-incident])
-                          (-> nav (.navigate "Edit"))))]
-         [component
-           [ui/text {:style {:font-size 24
+      (let [component (ui/floating-action-button (fn []
+                        (rf/dispatch-sync [:clear-current-incident])
+                        (-> nav (.navigate "Edit"))))]
+       [component
+         [ui/text {:style {:font-size 24
                              :font-weight "400"
                              :color "#FFF"}}
                              "+"]])]))

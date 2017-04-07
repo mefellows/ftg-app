@@ -2,11 +2,13 @@
   (:require [reagent.core :as r :refer [atom]]
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [clojure.data :as d]
-            [re-navigate.shared.screens.edit-incident :refer [edit-incident-form]]
+            [re-navigate.shared.screens.edit-incident :refer [edit-incident]]
+            [re-navigate.shared.screens.edit-student :refer [edit-student]]
             [re-navigate.shared.screens.incidents :refer [incidents]]
             [re-navigate.shared.screens.students :refer [students]]
             [re-navigate.shared.screens.classrooms :refer [classrooms]]
             [re-navigate.shared.screens.preferences :refer [preferences]]
+            [re-navigate.shared.screens.edit-preference :refer [edit-preference]]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme]]))
 
 (def ReactNative (js/require "react-native"))
@@ -29,11 +31,14 @@
                  :Preferences    {:screen (nav-wrapper preferences "Preferences")}
                  :Students       {:screen (nav-wrapper students "Students")}
                  :Classrooms     {:screen (nav-wrapper classrooms "Classrooms")}
-                 :Edit           {:screen (nav-wrapper edit-incident-form "Create/Edit Incident")}})
+                 :Student       {:screen (nav-wrapper edit-student "Create/Edit Student")}
+                 :Preference     {:screen (nav-wrapper edit-preference "Create/Edit Preference")}
+                 :Edit           {:screen (nav-wrapper edit-incident "Create/Edit Incident")}})
 
 ; TODO: take events / functions to dynamically add screens (e.g. during startup)
+; TODO: add stack navigator on top of these screens - e.g. edit incident, preference etc.
 (defn drawer-navigator-inst []
-  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Students" "Classrooms" "Edit"]
+  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Students" "Classrooms" "Edit" "Preference" "Student"]
                                                    :initialRouteName "Index"})))
 
 ; is this basically a redux-like reducer?

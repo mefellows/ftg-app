@@ -11,12 +11,13 @@
 
 (def list-view-ds (ds/data-source {:rowHasChanged #(not= %1 %2)}))
 
-(defn submit [id]
-  (rf/dispatch [:student-load id] ))
-
-(defn render-student-row [{:keys [first_name last_name id] :as student}]
+(defn render-student-row [nav]
+  (fn [{:keys [first_name last_name id] :as student}]
   [ui/touchable-highlight {:style       (:listview-row styles)
-                           :on-press    #(submit id)
+                           :on-press    (fn []
+                                          (rf/dispatch-sync [:student-load id])
+                                          ; (rf/dispatch [:set-nav "student"]))
+                                          (-> nav (.navigate "Student")))
                            :underlay-color "#efefef"
                            :active-opacity .9}
     [ui/view {:style       (:listview-row styles)}
@@ -24,7 +25,7 @@
           [ui/text {}
             (str first_name " " last_name)]]
       [ui/view {:style (:listview-rowaction styles)}
-        [ui/text {} " > "]]]])
+        [ui/text {} " > "]]]]))
 
 (defn footer [loading?]
   (when loading?
@@ -33,14 +34,14 @@
      [ui/activity-indicator
       {:style (:indicator styles)}]]))
 
-(defn student-list [students loading?]
+(defn student-list [nav students loading?]
   (if (not-empty students)
     (let []
       [ui/scroll
        {:style (:listview-row styles)}
        [ui/list-view (merge
                        {:dataSource    (ds/clone-with-rows list-view-ds students)
-                        :render-row    (comp r/as-element render-student-row u/js->cljk)
+                        :render-row    (comp r/as-element (render-student-row nav) u/js->cljk)
                         :style         (merge-with (:container styles) (:first-item styles))
                         :render-footer (comp r/as-element (partial footer loading?))}
                        {})]])

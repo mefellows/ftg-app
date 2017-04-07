@@ -3,6 +3,9 @@
             [re-frame.core :refer [subscribe dispatch dispatch-sync]]
             [re-navigate.events]
             [re-navigate.shared.screens.login :refer [login]]
+            [re-navigate.shared.screens.edit-student :refer [edit-student]]
+            [re-navigate.shared.screens.edit-incident :refer [edit-incident]]
+            [re-navigate.shared.screens.edit-preference :refer [edit-preference]]
             [re-navigate.shared.components.navigation :refer [tab-navigator]]
             [clojure.data :as d]
             [re-navigate.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme floating-action-button]]
@@ -16,7 +19,11 @@
     (fn []
       (if (nil? @user)
         [login]
-        [tab-navigator]))))
+        (case @nav-state
+          "student" [edit-student]
+          "incident" [edit-incident]
+          "preference" [edit-preference]
+          [tab-navigator])))))
 
 (defn init []
   (dispatch-sync [:initialize-db])

@@ -57,7 +57,6 @@
              :password t.String}]
                (t.struct (clj->js obj))))
 
-; TODO: Move state into GLOBAL app state, not confined to component
 (defn login []
  (let [value (subscribe [:login-form])
        this (r/current-component)]
@@ -69,9 +68,6 @@
              :value @value
              :options options
              :on-change #(rf/dispatch [:set-login-form %1])}]
-      [ui/touchable-highlight {
-                               :on-press    #(on-submit this @value)
-                               :style       {:background-color (ui/colour :orange800) :padding 10 :margin-bottom 20 :border-radius 5}
-                              ;  :is-disabled #(not (valid-form? props))
-                             }
+      [ui/touchable-highlight {:on-press    #(on-submit this @value)
+                               :style       {:background-color (ui/colour :orange800) :padding 10 :margin-bottom 20 :border-radius 5}}
         [ui/text {:style {:color "white" :text-align "center" :font-weight "bold"}} "Login"]]]]))

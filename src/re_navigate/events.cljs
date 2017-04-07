@@ -63,13 +63,19 @@
    (js/console.log "SET2 current incident" (clj->js value))
    (assoc db :current-incident value)))
 
-; reset
 (reg-event-db
  :clear-current-incident
  standard-interceptors
  (fn [db [_ value]]
    (js/console.log "reset current incident")
    (assoc db :current-incident nil)))
+
+(reg-event-db
+ :clear-current-preference
+ standard-interceptors
+ (fn [db [_ value]]
+   (js/console.log "reset current preference")
+   (assoc db :current-preference nil)))
 
 (defn find-student-classroom "Finds a classroom in the given db by a students' id" [db id]
   (let [classrooms (:classrooms db)
@@ -115,7 +121,6 @@
                             (= (:id student) id)))))]
         (if-not (nil? student)
           (let []
-            (dispatch [:nav/push :edit-student])
             (-> db
               (assoc :current-student-incidents student-incidents)
               (assoc :current-student student)))
@@ -149,7 +154,7 @@
                         (= (:id preference) id)))))]
     (if-not (nil? preference)
       (let []
-        (dispatch [:nav/push :edit-preference])
+        ; (dispatch [:nav/push :edit-preference])
         (assoc db :current-preference preference))
       nil)))
 
@@ -457,12 +462,18 @@
                    (update-incident db)
                    (assoc db :incidents)))))))
 
-; EXPERIMENTAL NAVIGATION
 (reg-event-db
   :set-login-form
   standard-interceptors
   (fn [db [_ value]]
     (assoc db :login-form value)))
+
+(reg-event-db
+  :set-current-preference
+  standard-interceptors
+  (fn [db [_ value]]
+    (assoc db :current-preference value)))
+
 ;; -- Navigation handlers ---------------------------------------------------
 
 ;; TODO: Review which events are used!!

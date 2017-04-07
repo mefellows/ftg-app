@@ -99,8 +99,6 @@
   (let [nav-screen (rf/subscribe [:nav-screen])]
     (js/console.log "RENDER HEADER AGAIN: " @nav-screen)
 
-
-
     [view {:border-bottom-width 0
           :border-bottom-color "#aaaaaa"
           :color "#fff"
@@ -109,7 +107,7 @@
           :background-color (colour :orange800)
           :margin-top 40
           :padding-top 10
-          :margin-bottom 40}
+          :margin-bottom 20}
        [view {:flex 1 :text-align-vertical "center" :height 18}
          [material-icon-button {:name "menu"
                                 :background-color (colour :orange800)

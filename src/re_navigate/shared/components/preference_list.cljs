@@ -11,12 +11,12 @@
 
 (def list-view-ds (ds/data-source {:rowHasChanged #(not= %1 %2)}))
 
-(defn submit [id]
-  (rf/dispatch [:preference-load id] ))
-
-(defn render-preference-row [{:keys [type value id] :as preference}]
+(defn render-preference-row [nav]
+  (fn [{:keys [type value id] :as preference}]
   [ui/touchable-highlight {:style       (:listview-row styles)
-                           :on-press    #(submit id)
+                           :on-press    (fn []
+                                         (rf/dispatch-sync [:preference-load id])
+                                         (-> nav (.navigate "Preference")))
                            :underlay-color "#efefef"
                            :active-opacity .9}
     [ui/view {:style       (:listview-row styles)}
@@ -24,7 +24,7 @@
           [ui/text {}
             (str value)]]
       [ui/view {:style (:listview-rowaction styles)}
-        [ui/text {} " > "]]]])
+        [ui/text {} " > "]]]]))
 
 (defn footer [loading?]
   (when loading?
@@ -33,12 +33,12 @@
      [ui/activity-indicator
       {:style (:indicator styles)}]]))
 
-(defn preference-list [preferences loading?]
+(defn preference-list [nav preferences loading?]
   (if (not-empty preferences)
     (let []
        [ui/list-view (merge
                        {:dataSource    (ds/clone-with-rows list-view-ds preferences)
-                        :render-row    (comp r/as-element render-preference-row u/js->cljk)
+                        :render-row    (comp r/as-element (render-preference-row nav) u/js->cljk)
                         :render-footer (comp r/as-element (partial footer loading?))}
                        {})])
    [ui/scroll

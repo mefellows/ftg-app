@@ -134,7 +134,6 @@
       (t.struct (clj->js (assoc obj :id t.Number)))
       (t.struct (clj->js obj)))))
 
-;
 (def style
   {
    :title       {:font-size   30
@@ -151,7 +150,7 @@
    })
 
 ; ; TODO: Move state into GLOBAL app state, not confined to component
-(defn edit-incident-form []
+(defn edit-incident []
  (fn [nav]
   (r/create-class
     {:reagent-render

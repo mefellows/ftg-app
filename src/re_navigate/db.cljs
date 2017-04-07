@@ -40,6 +40,7 @@
           :sync                         s/Bool
           :nav-screen                   s/Any
           :login-form                   s/Any
+          :preference-form              s/Any
           :current-page                 s/Keyword))
 
 ;; initial state of app-db

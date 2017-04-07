@@ -27,26 +27,35 @@
                        [ui/view {:style (:readonly-container styles)}
                     [ui/text {:style (:readonly-value styles)}
                        "The following people will be notified daily at 5pm of all yard incidents"]]
-                    [preference-list (filtered-preferences @preferences "contact") @loading]
+                    [preference-list nav (filtered-preferences @preferences "contact") @loading]
                    [ui/view {:style (:readonly-form styles)}
                     [ui/text {:style (:readonly-section-title styles)}
                        "Summaries"]]
                        [ui/view {:style (:readonly-container styles)}
                     [ui/text {:style (:readonly-value styles)}
                        "Incident summaries for pre-population in yard incidents"]]
-                    [preference-list (filtered-preferences @preferences "summary") @loading]
+                    [preference-list nav (filtered-preferences @preferences "summary") @loading]
                    [ui/view {:style (:readonly-form styles)}
                     [ui/text {:style (:readonly-section-title styles)}
                        "Locations"]]
                        [ui/view {:style (:readonly-container styles)}
                     [ui/text {:style (:readonly-value styles)}
                        "Locations for pre-population in yard incidents"]]
-                    [preference-list (filtered-preferences @preferences "location") @loading]
+                    [preference-list nav (filtered-preferences @preferences "location") @loading]
                     [ui/view {:style (:readonly-form styles)}
                      [ui/text {:style (:readonly-section-title styles)}
                         "Actions"]]
                         [ui/view {:style (:readonly-container styles)}
                      [ui/text {:style (:readonly-value styles)}
                         "Action taken for pre-population in yard incidents"]]
-                        [preference-list (filtered-preferences @preferences "action") @loading]
-                    ]]])))
+                        [preference-list nav (filtered-preferences @preferences "action") @loading]
+                    ]]
+                    (let [component (ui/floating-action-button (fn []
+                                      (rf/dispatch-sync [:clear-current-preference])
+                                      (-> nav (.navigate "Preference"))))]
+                     [component
+                       [ui/text {:style {:font-size 24
+                                           :font-weight "400"
+                                           :color "#FFF"}}
+                                           "+"]])
+                    ])))
