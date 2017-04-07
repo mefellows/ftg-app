@@ -10,7 +10,6 @@
                            [camel-snake-kebab "0.4.0"]
                            [medley "0.8.1"]
                            [com.rpl/specter "0.10.0"]
-                           [cljs-ajax "0.5.4"]
                            [funcool/tubax "0.2.0"]
                            [natal-shell "0.2.1"]
                            [reagent "0.6.0" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server]]

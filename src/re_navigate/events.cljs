@@ -60,21 +60,18 @@
  :set-current-incident
  standard-interceptors
  (fn [db [_ value]]
-   (js/console.log "SET2 current incident" (clj->js value))
    (assoc db :current-incident value)))
 
 (reg-event-db
  :clear-current-incident
  standard-interceptors
  (fn [db [_ value]]
-   (js/console.log "reset current incident")
    (assoc db :current-incident nil)))
 
 (reg-event-db
  :clear-current-preference
  standard-interceptors
  (fn [db [_ value]]
-   (js/console.log "reset current preference")
    (assoc db :current-preference nil)))
 
 (defn find-student-classroom "Finds a classroom in the given db by a students' id" [db id]
@@ -127,21 +124,18 @@
           nil)))
 
 (defn find-incident "Finds an incident in the given db by id" [db id]
-  (js/console.log "finds incident by id " id)
   (let [incidents (:incidents db)
     incident (first
                (->> incidents
                     (filter
                       (fn [incident]
                         (= (:id incident) id)))))]
-                        (js/console.log "find incident: BEFORE student transform" (clj->js (:students incident)))
     (if-not (nil? incident)
       (let [students (:students incident)
               ; check if students are formatted as [1 2 3] or [obj obj obj]
               updated-incident (if (and (not (empty? students)) (map? (students 0)))
                                 (assoc incident :students (into [] (map #(:id %1) students)))
                                  incident)]
-        (js/console.log "current incident" (clj->js (map? (students 0))))
         (assoc db :current-incident updated-incident))
       nil)))
 
@@ -160,11 +154,9 @@
 
 (defn update-incident "Finds and updates an incident in the db (uses local-id)" [db incident]
   (let [incidents (:incidents db)]
-  (js/console.log "overidding? here are our inncidents: " incidents)
     (->>
       incidents
       (mapv #(let []
-        (js/console.log "incident id, local_id vs saved incident id, local id: " (:id %1) (:local_id %1), (:id incident) (:local_id incident))
         (if (or (= (:id %1) (:id incident)) (and (= (:local_id %1) (:local_id incident)) (not= (:local_id %1 nil)))) incident %))))))
 
 (def standard-middlewares  [standard-interceptors log-ex])
@@ -322,7 +314,6 @@
   (.stringify js/JSON (clj->js ds)))
 
 (defn sync-records [records]
-  (js/console.log "sync records: " (clj->js records))
     (-> (js/fetch (str (:hostname env) "/sync") (clj->js {:method "POST" :body (clj->json records) :headers (stringify-keys { :accept "application/json" :content-type "application/json"})}))
         (.then #(.json %))
         (.then js->clj)
@@ -331,7 +322,6 @@
         (.catch #(dispatch-sync [:sync-fail %1]))))
 
 (defn save-preference [preference]
-  (js/console.log "saving preference: " (clj->js preference))
   (let [method (if (nil? (:id preference))
                           "POST"
                           "PUT")]
@@ -430,24 +420,15 @@
       (filter #(let []
         (and (= (:local_id %1) local-id) (not (nil? local-id)))))))))
 
-; (defn get-incident-by-id "Finds an incident in the db by its id" [db id]
-;   (let [incidents (:incidents db)]
-;     (first (->>
-;       incidents
-;       (filter #(let []
-;         (= (:id %1) id)))))))
-
  ; NOTE: handle updates to unsynced records -> currently only adds new.
  (reg-event-db
    :save-incident
    standard-interceptors
    (fn [db [_ incident]]
-     (print "Saving local incident: " incident)
      (let [incidents (:incidents db)
            id (:id incident)
            local-id (:local_id incident)
            updated-incident (assoc incident :synchronised false)]
-           (print "updated-incident" updated-incident)
         (if (and (nil? (get-incident-by-local-id db local-id)) (nil? id))
          (let []
            ; Add a new incident locally.
@@ -543,21 +524,18 @@
           idx     (position #(do
                                (= tab (name (:nav.route/routeName %))))
                             (get-in db [:nav/tab-state :nav.state/routes]))]
-      ; (js/console.log (js/Date.) "SETTING TAB " tab idx old-idx)
       (assoc-in db [:nav/tab-state :nav.state/index] idx))))
 
 (reg-event-db
   :nav/set
   standard-interceptors
   (fn [db [_ nav]]
-    (js/console.log "GOT NAV" nav)
     (assoc-in db [:nav/tab-state :nav.state/index] (.-index nav))))
 
 (reg-event-fx
   :nav/js-tab
   standard-interceptors
   (fn [{:keys [db]} [_ tab-val]]
-    ; (js/console.log "JS TAB NAV" (js->clj tab-val))
     {:dispatch (case (.-type tab-val)
                  "Back" [:nav/back]
                  "Navigate" [:nav/set #:nav.state{:index ()} (.-routeName tab-val)])
@@ -568,8 +546,6 @@
   :nav/js
   standard-interceptors
   (fn [{:keys [db]} [_ [nav-val route-name]]]
-    ; (js/console.log [nav-val route-name])
-    ; (js/console.log "JS NAV" (js->clj nav-val))
     {:dispatch (case (.-type nav-val)
                  "Back" [:nav/back route-name]
                  "Navigate" [:nav/navigate (nav-val->route nav-val route-name)])
@@ -580,5 +556,4 @@
  :set-nav
  standard-interceptors
  (fn [db [_ value]]
-   (js/console.log "navigating somewhere:" (clj->js value))
    (assoc db :nav-screen value)))

@@ -58,12 +58,4 @@
   (let []
     [ui/view {}
       [ui/scroll {:style (merge-with (:listview-row styles) (:first-item styles))}
-        [incident-list nav incidents loading?]]
-      (let [component (ui/floating-action-button (fn []
-                        (rf/dispatch-sync [:clear-current-incident])
-                        (-> nav (.navigate "Edit"))))]
-       [component
-         [ui/text {:style {:font-size 24
-                             :font-weight "400"
-                             :color "#FFF"}}
-                             "+"]])]))
+        [incident-list nav incidents loading?]]]))

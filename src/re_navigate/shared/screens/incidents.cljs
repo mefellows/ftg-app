@@ -15,4 +15,12 @@
                       :flex-direction "column"}
               [ui/header nav "Incidents"]
               [ui/view {:flex 9}
-                [incident-list-view nav @incidents @loading]]])))
+                [incident-list-view nav @incidents @loading]]
+              (let [component (ui/floating-action-button (fn []
+                                (rf/dispatch-sync [:clear-current-incident])
+                                (-> nav (.navigate "Edit"))))]
+               [component
+                 [ui/text {:style {:font-size 24
+                                     :font-weight "400"
+                                     :color "#FFF"}}
+                                     "+"]])])))

@@ -17,7 +17,7 @@
               classroom (rf/subscribe [:current-student-classroom])
               loading (rf/subscribe [:sync])
               date (new js/Date (:date_of_birth @student))]
-              [ui/view {:flex 1 :flex-direction "column"}
+              [ui/view {:flex 1 :flex-direction "column" :padding-bottom 20}
                 [ui/header nav "View Student"]
                 [ui/view {:flex 9}
                   [ui/scroll {:style (:first-item styles)}

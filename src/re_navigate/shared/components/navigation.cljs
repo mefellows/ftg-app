@@ -30,7 +30,6 @@
 (def tab-router {:Index          {:screen (nav-wrapper incidents "Incidents")}
                  :Preferences    {:screen (nav-wrapper preferences "Preferences")}
                  :Students       {:screen (nav-wrapper students "Students")}
-                 :Classrooms     {:screen (nav-wrapper classrooms "Classrooms")}
                  :Student       {:screen (nav-wrapper edit-student "Create/Edit Student")}
                  :Preference     {:screen (nav-wrapper edit-preference "Create/Edit Preference")}
                  :Edit           {:screen (nav-wrapper edit-incident "Create/Edit Incident")}})
@@ -38,7 +37,7 @@
 ; TODO: take events / functions to dynamically add screens (e.g. during startup)
 ; TODO: add stack navigator on top of these screens - e.g. edit incident, preference etc.
 (defn drawer-navigator-inst []
-  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Students" "Classrooms" "Edit" "Preference" "Student"]
+  (drawer-navigator (clj->js tab-router) (clj->js {:order            ["Index" "Preferences" "Students" "Edit" "Preference" "Student"]
                                                    :initialRouteName "Index"})))
 
 ; is this basically a redux-like reducer?

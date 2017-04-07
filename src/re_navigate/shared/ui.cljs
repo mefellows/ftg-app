@@ -97,35 +97,30 @@
 ; Header: button + title
 (defn header [navigation title]
   (let [nav-screen (rf/subscribe [:nav-screen])]
-    (js/console.log "RENDER HEADER AGAIN: " @nav-screen)
-
-    [view {:border-bottom-width 0
-          :border-bottom-color "#aaaaaa"
+    [view {:border-bottom-width 1
+          :border-bottom-color "#eeeeee"
           :color "#fff"
-          :flex .4
+          :flex .6
           :flex-direction "row"
           :background-color (colour :orange800)
-          :margin-top 40
-          :padding-top 10
-          :margin-bottom 20}
-       [view {:flex 1 :text-align-vertical "center" :height 18}
+          :margin-top (if (android?) 0 40)
+          :padding-top 15
+          :margin-bottom 0}
+       [view {:flex 1 :text-align-vertical "center" :height 26}
          [material-icon-button {:name "menu"
                                 :background-color (colour :orange800)
                                 :color "#fff"
+                                :size 24
                                 :border-radius 0
-                                :on-press (fn []
-                                            (js/console.log "drawer press?" navigation)
-                                            (-> navigation (.navigate "DrawerOpen")))}]]
-       [view {:flex 7 :align-items "center" :height 18}
-         [text {:style {:text-align "center" :color "#fff"}}
+                                :height 26
+                                :on-press #(-> navigation (.navigate "DrawerOpen"))}]]
+       [view {:flex 7 :align-items "center" :text-align-vertical "center" :height 26}
+         [text {:style {:text-align "center" :color "#fff" :font-size 18 :font-weight "600"}}
            title]]
-      [view {:flex 1
-                :text-align-vertical "center"
-                :height 18}
-        [material-icon-button {:name "refresh"
-                                  :background-color (colour :orange800)
-                                  :color "#fff"
-                                  :border-radius 0
-                                  :on-press (fn []
-                                    (js/console.log "synchronise")
-                                    (rf/dispatch [:synchronise]))}]]]))
+       [view {:flex 1 :text-align-vertical "center" :height 26}
+         [material-icon-button {:name "refresh"
+                                :background-color (colour :orange800)
+                                :color "#fff"
+                                :border-radius 0
+                                :size 24
+                                :on-press #(rf/dispatch [:synchronise])}]]]))

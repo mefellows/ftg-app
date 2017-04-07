@@ -15,7 +15,6 @@
   (rf/dispatch [:classroom-load id] ))
 
 (defn render-classroom-row [{:keys [name year id] :as classroom}]
-; (defn render-classroom-row [{:keys [first_name last_name id] :as classroom}]
   [ui/touchable-highlight {:style       (:listview-row styles)
                            :on-press    #(submit id)
                            :underlay-color "#efefef"

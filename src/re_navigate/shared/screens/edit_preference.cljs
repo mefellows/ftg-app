@@ -60,7 +60,7 @@
         (this-as this
           (let [current-preference (rf/subscribe [:current-preference])]
                (js/console.log "Value => " (clj->js @current-preference))
-               [ui/view {:flex 1 :flex-direction "column"}
+               [ui/view {:flex 1 :flex-direction "column" :padding-bottom 20}
                  [ui/header nav "Edit Preference"]
                  [ui/view {:flex 9}
                    [ui/scroll {:style (:scroll-container styles)}

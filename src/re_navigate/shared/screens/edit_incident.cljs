@@ -16,8 +16,6 @@
                                          (aget "form")))]
   (empty? (js->clj (aget validation-result "errors")))))
 
-
-
 ; sanitises dates etc.
 (defn sanitise-form [incident]
   (let [start_time (:start_time incident)
@@ -66,18 +64,26 @@
 ; for more you can modify.
 (def form-style
   (let [stylesheet (_.cloneDeep s)
-  updated (-> stylesheet
-    (.-controlLabel)
-    (.-normal)
-    (aset "color" "#444444"))]
+        label (-> stylesheet
+          (.-controlLabel)
+          (.-normal))
+        button (-> stylesheet
+                    (.-button))]
+        (aset label "color" "#444444")
+        (aset button "backgroundColor" (colour :teal400))
+        (aset button "borderColor" (colour :teal400))
     stylesheet))
+
+; Set button colour globally
+(aset (-> t (.-form) (.-Form) (.-stylesheet) (.-button)) "backgroundColor" "#ccc")
 
 (def text-area-style
   (let [stylesheet (_.cloneDeep form-style)
-        updated (-> stylesheet
+        textbox (-> stylesheet
                     (.-textbox)
-                    (.-normal)
-                    (aset "height" 150))]
+                    (.-normal))]
+        (aset textbox "textAlignVertical" "top")
+        (aset textbox "height" 150)
         stylesheet))
 
 (def options
@@ -167,7 +173,7 @@
               updated (-> @current-incident
                   (assoc :start_time (js->clj (if (nil? start_time) (new js/Date) (new js/Date start_time))))
                   (assoc :end_time (js->clj (if (nil? end_time) (new js/Date) (new js/Date end_time)))))]
-          [view {:flex 1 :flex-direction "column"}
+          [view {:flex 1 :flex-direction "column" :padding-bottom 20}
             [header nav "Edit Incident"]
             [view {:flex 9}
               [scroll {:style (:scroll-container styles)}
