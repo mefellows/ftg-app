@@ -1,4 +1,4 @@
-(defproject re-navigate "0.1.0-SNAPSHOT"
+(defproject yimp "0.1.0-SNAPSHOT"
             :description "FIXME: write description"
             :url "http://example.com/FIXME"
             :license {:name "Eclipse Public License"
@@ -37,7 +37,7 @@
                                                        :source-paths ["src" "test"]
                                                                       :compiler {:output-to "target/resources/test.js"
                                                                                  :output-dir "target/test/"
-                                                                                 :main re-navigate.core.test-runner
+                                                                                 :main yimp.core.test-runner
                                                                                  :optimizations :none
                                                                                  :pretty-print true
                                                                                  :source-map false}}

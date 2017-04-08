@@ -1,6 +1,6 @@
 (ns ^:figwheel-no-load env.ios.main
  (:require [reagent.core :as r]
-           [re-navigate.shared.main :as main]
+           [yimp.shared.main :as main]
            [figwheel.client :as figwheel :include-macros true]
            ))
 

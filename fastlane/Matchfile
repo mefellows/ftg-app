@@ -1,0 +1,9 @@
+git_url "git@bitbucket.org:mfellows/onegeek-ftg-app-fastlane.git"
+
+type "development" # The default type, can be: appstore, adhoc or development
+
+app_identifier "au.com.onegeek.yimp"
+username "matt.fellows@onegeek.com.au"
+
+# For all available options run `match --help`
+# Remove the # in the beginning of the line to enable the other options

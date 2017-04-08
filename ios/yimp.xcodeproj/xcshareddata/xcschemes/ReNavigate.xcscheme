@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "ReNavigate.app"
-               BlueprintName = "ReNavigate"
-               ReferencedContainer = "container:ReNavigate.xcodeproj">
+               BuildableName = "yimp.app"
+               BlueprintName = "yimp"
+               ReferencedContainer = "container:yimp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -43,9 +43,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "ReNavigateTests.xctest"
-               BlueprintName = "ReNavigateTests"
-               ReferencedContainer = "container:ReNavigate.xcodeproj">
+               BuildableName = "yimpTests.xctest"
+               BlueprintName = "yimpTests"
+               ReferencedContainer = "container:yimp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -61,9 +61,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "ReNavigateTests.xctest"
-               BlueprintName = "ReNavigateTests"
-               ReferencedContainer = "container:ReNavigate.xcodeproj">
+               BuildableName = "yimpTests.xctest"
+               BlueprintName = "yimpTests"
+               ReferencedContainer = "container:yimp.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,9 +71,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ReNavigate.app"
-            BlueprintName = "ReNavigate"
-            ReferencedContainer = "container:ReNavigate.xcodeproj">
+            BuildableName = "yimp.app"
+            BlueprintName = "yimp"
+            ReferencedContainer = "container:yimp.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -94,9 +94,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ReNavigate.app"
-            BlueprintName = "ReNavigate"
-            ReferencedContainer = "container:ReNavigate.xcodeproj">
+            BuildableName = "yimp.app"
+            BlueprintName = "yimp"
+            ReferencedContainer = "container:yimp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -113,9 +113,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "ReNavigate.app"
-            BlueprintName = "ReNavigate"
-            ReferencedContainer = "container:ReNavigate.xcodeproj">
+            BuildableName = "yimp.app"
+            BlueprintName = "yimp"
+            ReferencedContainer = "container:yimp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

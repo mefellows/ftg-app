@@ -1,6 +1,6 @@
-> Update 2017-02-01: Got a VERY quick and dirty version for the new React Navigation library going. If you are looking for the old one for NavigationExperimental it is on the branch [old-re-navigate](https://github.com/vikeri/re-navigate/tree/old-re-navigate)
+> Update 2017-02-01: Got a VERY quick and dirty version for the new React Navigation library going. If you are looking for the old one for NavigationExperimental it is on the branch [old-yimp](https://github.com/vikeri/yimp/tree/old-yimp)
 
-# re-navigate
+# yimp
 > Example of React Navigation with [re-frame](https://github.com/Day8/re-frame)/[re-natal](https://github.com/drapanjanas/re-natal/)
 
 
@@ -14,7 +14,7 @@ Reading the state of the stack from re-frame works just fine.
 
 ## Example code
 
-It is based on the scaffold from [re-natal](https://github.com/drapanjanas/re-natal/), almost everything is found in [re-navigate.ios.core](src/re_navigate/ios/core.cljs)
+It is based on the scaffold from [re-natal](https://github.com/drapanjanas/re-natal/), almost everything is found in [yimp.ios.core](src/re_navigate/ios/core.cljs)
 
 ## Run
 
@@ -45,7 +45,7 @@ yarn && lein prod-build && react-native  run-ios --simulator "iPhone 7 Plus"
 Get into current namespace:
 
 ```
-(in-ns 're-navigate.shared.main)
+(in-ns 'yimp.shared.main)
 ```
 
 Set current incident:
@@ -67,3 +67,7 @@ you'll get errors like "can't get the value of text..."
 adb reverse tcp:8081 tcp:8081 # React Dev Server
 adb reverse tcp:3000 tcp:3000 # Local API
 ```
+
+## Credits
+
+<a href="http://www.freepik.com/free-vector/children-playing-on-playground_992323.htm">Designed by Freepik</a>
