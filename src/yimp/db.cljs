@@ -51,7 +51,8 @@
                                                                    :routes [#:nav.route {:key :Home :routeName :Home}]}}
              :nav-screen {:type "Navigation/INIT"}
              :user (if goog.DEBUG
-                    {:id 0
-                     :username "Stephanie Massarotti"
-                     :password "gullynorth"}
+                      {:id 7
+                       :first_name "Stephanie"
+                       :last_name "Massarotti"
+                       :password "gullynorth"}
                     nil)})

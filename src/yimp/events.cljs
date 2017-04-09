@@ -62,10 +62,10 @@
    (assoc db :current-incident value)))
 
 (reg-event-db
- :clear-current-incident
+ :create-new-incident
  standard-interceptors
- (fn [db [_ value]]
-   (assoc db :current-incident nil)))
+ (fn [db [_ user]]
+   (assoc db :current-incident {:teacher user})))
 
 (reg-event-db
  :clear-current-preference
@@ -150,6 +150,15 @@
         ; (dispatch [:nav/push :edit-preference])
         (assoc db :current-preference preference))
       nil)))
+
+(defn find-user "Finds an user in the given db by id" [db id]
+  (let [users (:teachers db)
+        user (first
+                   (->> users
+                        (filter
+                          (fn [user]
+                            (= (:id user) id)))))]
+        user))
 
 (defn update-incident "Finds and updates an incident in the db (uses local-id)" [db incident]
   (let [incidents (:incidents db)]
@@ -265,10 +274,11 @@
   :login
   standard-interceptors
   (fn [db [_ user]]
-    (let [password (:password user)]
+    (let [password (:password user)
+          id (int (:username user))]
       (if (= password "gullynorth")
-        (let []
-          (assoc db :user user))
+        (let [u (find-user db id)]
+          (assoc db :user u))
         (let []
           (js/alert "Invalid password :(") db)))))
 

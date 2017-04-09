@@ -8,6 +8,7 @@
 (defn incidents []
    (fn [nav]
       (let [incidents (rf/subscribe [:incidents])
+            user (rf/subscribe [:user])
             this (r/current-component)
             props (r/props this)
             loading (rf/subscribe [:sync])]
@@ -17,7 +18,7 @@
               [ui/view {:flex 9}
                 [incident-list-view nav @incidents @loading]]
               (let [component (ui/floating-action-button (fn []
-                                (rf/dispatch-sync [:clear-current-incident])
+                                (rf/dispatch-sync [:create-new-incident @user])
                                 (-> nav (.navigate "Edit"))))]
                [component
                  [ui/text {:style {:font-size 24

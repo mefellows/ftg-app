@@ -4,8 +4,6 @@
             [clojure.walk :refer [keywordize-keys]]
             [yimp.shared.styles :refer [styles]]
             [clojure.string :as str]
-            ; [yimp.subs]
-            ; [yimp.events]
             [yimp.shared.screens.preferences :refer [filtered-preferences]]
             [yimp.shared.ui :refer [app-registry text scroll image view md-icon-toggle md-button md-switch theme touchable-highlight floating-action-button header colour]]))
 
@@ -31,11 +29,13 @@
   (js/console.log "on submit")
   (when (valid-form? props)
     (let [i (subscribe [:current-incident])
+          user (subscribe [:user])
           incident (sanitise-form @i)
           ; turns it BACK into a clj object.
           ; TODO: move this out of thsi class??
           students (into [] (map (fn [i] {:id (int i)}) (:students incident)))
           updated (-> incident
+            (assoc :teacher @user)
             (assoc :students students)
             (assoc :start_time (.toISOString (new js/Date (:start_time incident))))
             (assoc :end_time (.toISOString (new js/Date (:end_time incident)))))]
@@ -73,6 +73,18 @@
         (aset button "backgroundColor" (colour :teal400))
         (aset button "borderColor" (colour :teal400))
     stylesheet))
+
+(def label-style
+  (-> form-style
+      (.-controlLabel)
+      (.-normal)))
+
+(def text-style
+  (let [s (-> label-style
+             (_.cloneDeep))]
+        (aset s "fontWeight" "normal")
+        (aset s "paddingLeft" 10)
+   s))
 
 ; Set button colour globally
 (aset (-> t (.-form) (.-Form) (.-stylesheet) (.-button)) "backgroundColor" "#ccc")
@@ -134,8 +146,7 @@
              :description (t.maybe t.String)
              :location (Preference "location" (:location @current-incident))
              :follow_up (t.maybe t.Boolean)
-             :action_taken (Preference "action" (:action_taken @current-incident))
-             }]
+             :action_taken (Preference "action" (:action_taken @current-incident))}]
     (if-not new?
       (t.struct (clj->js (assoc obj :id t.Number)))
       (t.struct (clj->js obj)))))
@@ -155,7 +166,12 @@
                  :font-weight "bold"}
    })
 
-; ; TODO: Move state into GLOBAL app state, not confined to component
+(defn get-teacher [incident]
+  (let [name (str (get-in incident [:teacher :first_name]) " " (get-in incident [:teacher :last_name]))]
+    (if (= (str/trim name) "")
+      "not recorded"
+      name)))
+
 (defn edit-incident []
  (fn [nav]
   (r/create-class
@@ -177,11 +193,15 @@
             [header nav "Edit Incident"]
             [view {:flex 9}
               [scroll {:style (:scroll-container styles)}
-               [Form {:ref "form"
-                      :type (incident updated)
-                      :value (clj->js updated)
-                      :options options
-                      :on-change #(save %1)}]
+                [view {:style {:flex-direction "row" :flex 1}}
+                  [text {:flex 1 :style (js->clj label-style)} "Raised by"]
+                  [text {:flex 3 :style (js->clj text-style)} (get-teacher updated)]]
+                  ; [text {:style (merge-with (js->clj label-style) {})} (get-teacher updated)]]
+                [Form {:ref "form"
+                       :type (incident updated)
+                       :value (clj->js updated)
+                       :options options
+                       :on-change #(save %1)}]
                 [touchable-highlight
                   {:style      (style :button)
                   :disabled?   #(not (valid-form? this))
