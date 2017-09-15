@@ -1,8 +1,65 @@
-> Update 2017-02-01: Got a VERY quick and dirty version for the new React Navigation library going. If you are looking for the old one for NavigationExperimental it is on the branch [old-yimp](https://github.com/vikeri/yimp/tree/old-yimp)
+# Yard Incident Management Portal (YIMP)
 
-# yimp
+## How to run
+```
+$ npm i
+$ lein prod-build
+```
+Then run in iOS from xcode or `react-native run-ios`
+
+## How to develop
+YIMP is based on re-natal 0.2.34+.
+
+```
+re-natal use-figwheel
+lein figwheel ios
+react-native run-ios
+```
+
+Please, refer to [re-natal documentation](https://github.com/drapanjanas/re-natal/blob/master/README.md) for more information.
+
+## Building a release package
+
+```
+lein prod-build
+```
+
+Edit AppDelegate.m and comment out the live reload:
+
+```
+//jsCodeLocation = [NSURL URLWithString:@"http://localhost:8081/index.ios.bundle?platform=ios&dev=true"];
+ jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+
+```
+
+## Adding an image
+
+Copy image to `./images`. Be sure to add 2x and 3x versions (note the `@2x.png` and `@3x.png` suffixes).
+1. Restart React Package Manager
+2. Run `re-natil use-figwheel` to update deps
+3. `lein figwheel ios` to keep developing
+
+## Publish to App Store
+
+### TestFlight
+
+1. Update `config.cljs` and make sure app pointing to Heroku host.
+1. run `lein prod-build`
+1. Run fastlane:
+
+```
+fastlane beta
+```
+
+### App Store
+
+TBC
+
+
+
+## Tools
+
 > Example of React Navigation with [re-frame](https://github.com/Day8/re-frame)/[re-natal](https://github.com/drapanjanas/re-natal/)
-
 
 This example uses React Native's new Navigation component [React Navigation](https://reactnavigation.org/) that eventually will replace the current React Native navigation solutions (or so they say).
 
